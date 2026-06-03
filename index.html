@@ -517,12 +517,16 @@ function startApp(){
 // Inicia quando página carrega
 window.addEventListener('load', ()=>{
   // Esconde loading após Firebase conectar
+  // Esconde loading imediatamente — não bloqueia na conexão
+  $('loading').style.display='none';
+  
   DB.ref('.info/connected').on('value', snap=>{
     if(snap.val()===true){
-      $('loading').style.display='none';
+      sync('sincronizado','ti-cloud-check');
+    } else {
+      sync('reconectando...','ti-cloud-x');
     }
   });
-  setTimeout(()=>{ $('loading').style.display='none'; }, 3000);
 
   // Se já estava logado, inicia app direto
   if(sessionStorage.getItem('auth')==='1'){
