@@ -542,23 +542,22 @@ window.onload = function() {
     if(document.getElementById('th').style.display!=='none') renderHist();
   });
 
-  // Esconde loading quando Firebase conectar
+  // Carrega dados imediatamente — não espera evento de conexão
+  const chaveInicial = localStorage.getItem('dataAtiva') || hoje();
+  setData(chaveInicial);
+
+  // Monitora status de conexão só para o indicador visual
   db.ref('.info/connected').on('value', snap=>{
     if(snap.val()===true){
       document.getElementById('lov').style.display='none';
       setSS('sincronizado','ti-cloud-check');
-
-      // Recupera última data usada (localStorage) ou usa hoje
-      const salva = localStorage.getItem('dataAtiva');
-      const chave = salva || hoje();
-      setData(chave);
     } else {
       setSS('reconectando...','ti-cloud-x');
     }
   });
 
-  // Fallback: esconde loading após 6s
-  setTimeout(()=>{ document.getElementById('lov').style.display='none'; }, 6000);
+  // Fallback: esconde loading após 4s
+  setTimeout(()=>{ document.getElementById('lov').style.display='none'; }, 4000);
 };
 </script>
 </body>
