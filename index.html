@@ -2,7 +2,6 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<!-- v20260603022242 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pauta do Comitê de Crédito</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
@@ -484,8 +483,7 @@ function copyH(hi){
       L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;});
     });
   });
-  const txt=L.join('
-');
+  const txt=L.join('\n');
   navigator.clipboard.writeText(txt).then(()=>toast('✓ Pauta copiada!')).catch(()=>{
     const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast('✓ Copiado!');
   });
