@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pauta do Comitê de Crédito</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f5f5f4;
+      --bg3: #eeede8;
+      --text: #1a1a18;
+      --text2: #6b6b67;
+      --text3: #a0a09c;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --radius: 8px;
+      --radius-lg: 12px;
+      --success-bg: #e1f5ee;
+      --success-text: #0f6e56;
+      --danger-bg: #fcebeb;
+      --danger-text: #791f1f;
+      --warning-bg: #faeeda;
+      --warning-text: #633806;
+      --info-bg: #e6f1fb;
+      --info-text: #0c447c;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg3);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+    }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .login-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 380px;
+    }
+    .login-card h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .login-card p {
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 1.75rem;
+    }
+    .login-logo {
+      width: 44px;
+      height: 44px;
+      background: var(--text);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+    .login-logo i { font-size: 22px; color: #fff; }
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 5px; font-weight: 500; }
+    .field input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: var(--bg2);
+      color: var(--text);
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .field input:focus { outline: none; border-color: var(--text); }
+    .login-error { font-size: 13px; color: var(--danger-text); background: var(--danger-bg); padding: 8px 12px; border-radius: var(--radius); margin-bottom: 1rem; display: none; }
+    .btn-login {
+      width: 100%;
+      padding: 10px;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s;
+    }
+    .btn-login:hover { opacity: 0.85; }
+
+    /* ── APP ── */
+    #app-screen { display: none; }
+
+    .topbar {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      padding: 0 1.5rem;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 10px; }
+    .topbar-left h1 { font-size: 15px; font-weight: 600; }
+    .topbar-left span { font-size: 12px; color: var(--text2); }
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+    .badge-live {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; font-weight: 500;
+      color: var(--success-text);
+      background: var(--success-bg);
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .badge-live .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--success-text);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.35} }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 13px;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius);
+      background: transparent;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.12s;
+      text-decoration: none;
+    }
+    .btn:hover { background: var(--bg2); }
+    .btn.primary { background: var(--text); color: #fff; border-color: var(--text); }
+    .btn.primary:hover { opacity: 0.85; }
+    .btn.success { background: #1D9E75; color: #fff; border-color: #1D9E75; }
+    .btn.success:hover { opacity: 0.88; }
+    .btn.danger { color: var(--danger-text); border-color: #f09595; }
+    .btn.danger:hover { background: var(--danger-bg); }
+    .btn.sm { padding: 4px 8px; font-size: 12px; }
+    .btn i { font-size: 15px; }
+
+    .content { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      border-bottom: 0.5px solid var(--border);
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 9px 18px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text2);
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      background: none;
+      border-top: none; border-left: none; border-right: none;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--text); font-weight: 600; border-bottom-color: var(--text); }
+
+    /* DATE BAR */
+    .date-bar {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 12px 16px;
+      margin-bottom: 1.25rem;
+    }
+    .date-bar label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+    .date-bar input[type="date"] {
+      padding: 6px 10px;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius);
+      font-size: 14px; font-weight: 500;
+      background: var(--bg2); color: var(--text);
+      font-family: inherit; cursor: pointer;
+    }
+    .date-bar input:focus { outline: none; border-color: var(--text); }
+    #data-display { font-size: 14px; font-weight: 500; flex: 1; }
+
+    /* STATS */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px; margin-bottom: 1.25rem;
+    }
+    .stat-card {
+      background: var(--bg); border-radius: var(--radius);
+      padding: 12px 14px;
+      border: 0.5px solid var(--border);
+    }
+    .stat-card .lbl { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+    .stat-card .val { font-size: 24px; font-weight: 600; }
+
+    /* ADD FORM */
+    .add-form {
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .add-form h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px; margin-bottom: 12px;
+    }
+    .fg { display: flex; flex-direction: column; gap: 4px; }
+    .fg label { font-size: 12px; color: var(--text2); font-weight: 500; }
+    .fg input, .fg select {
+      padding: 8px 10px;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius);
+      font-size: 13px;
+      background: var(--bg2); color: var(--text);
+      font-family: inherit;
+    }
+    .fg input:focus, .fg select:focus { outline: none; border-color: var(--text); }
+
+    /* ALCADA BLOCKS */
+    .alcada-block { margin-bottom: 2rem; }
+    .alcada-block-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px; padding-bottom: 8px;
+      border-bottom: 2px solid;
+    }
+    .alcada-block-header .title { font-size: 15px; font-weight: 600; }
+    .alcada-block-header .count {
+      font-size: 12px; color: var(--text2);
+      background: var(--bg); border: 0.5px solid var(--border);
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .a3-hdr { border-color: #f09595; color: #791f1f; }
+    .a2-hdr { border-color: #fac775; color: #633806; }
+    .a1-hdr { border-color: #85b7eb; color: #0c447c; }
+
+    /* REGIONAIS */
+    .regional-section { margin-bottom: 10px; }
+    .regional-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 14px;
+      background: var(--bg2); border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer; user-select: none;
+      margin-bottom: 5px;
+    }
+    .regional-header-left { display: flex; align-items: center; gap: 8px; }
+    .regional-name { font-size: 13px; font-weight: 600; }
+    .regional-count {
+      font-size: 12px; color: var(--text2);
+      background: var(--bg); border: 0.5px solid var(--border);
+      padding: 1px 7px; border-radius: 20px;
+    }
+    .chevron { font-size: 15px; transition: transform 0.2s; }
+    .chevron.rot { transform: rotate(-90deg); }
+
+    .companies-list { display: flex; flex-direction: column; gap: 5px; }
+    .companies-list.hidden { display: none; }
+
+    .company-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px;
+      background: var(--bg); border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      transition: background 0.1s;
+    }
+    .company-row:hover { background: var(--bg2); }
+    .company-num { font-size: 13px; color: var(--text3); width: 22px; text-align: right; font-weight: 600; flex-shrink: 0; }
+    .company-info { flex: 1; min-width: 0; }
+    .company-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .company-meta { font-size: 12px; color: var(--text2); margin-top: 1px; }
+
+    .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+    .badge.a1 { background: var(--info-bg); color: var(--info-text); }
+    .badge.a2 { background: var(--warning-bg); color: var(--warning-text); }
+    .badge.a3 { background: var(--danger-bg); color: var(--danger-text); }
+
+    .empty { padding: 14px; text-align: center; font-size: 13px; color: var(--text3); border: 0.5px dashed var(--border2); border-radius: var(--radius); }
+
+    /* SYNC STATUS */
+    #sync-status {
+      font-size: 12px; color: var(--text2);
+      display: flex; align-items: center; gap: 5px;
+    }
+
+    /* HISTORY */
+    .history-list { display: flex; flex-direction: column; gap: 10px; }
+    .history-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .history-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: var(--bg2); cursor: pointer;
+    }
+    .history-card-header .hdate { font-size: 14px; font-weight: 600; }
+    .history-card-header .hinfo { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .history-card-body { padding: 12px 16px; display: none; }
+    .history-card-body.open { display: block; }
+    .h-alcada-title { font-size: 13px; font-weight: 600; margin: 10px 0 5px; padding-bottom: 4px; border-bottom: 0.5px solid var(--border); }
+    .h-regional { margin-bottom: 8px; }
+    .h-regional-name { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 3px; }
+    .h-company { font-size: 13px; padding: 3px 0; border-bottom: 0.5px solid var(--border); }
+
+    /* TOAST */
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--text); color: #fff;
+      padding: 10px 18px; border-radius: var(--radius);
+      font-size: 13px; opacity: 0;
+      transition: opacity 0.2s; pointer-events: none; z-index: 9999;
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; }
+
+    /* FIREBASE LOADING */
+    #loading-overlay {
+      position: fixed; inset: 0;
+      background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column; gap: 12px;
+    }
+    #loading-overlay p { font-size: 14px; color: var(--text2); }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .topbar { padding: 0 1rem; }
+      .content { padding: 1rem 0.75rem 4rem; }
+      .form-grid { grid-template-columns: 1fr 1fr; }
+      .topbar-left span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <p>Conectando...</p>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><i class="ti ti-clipboard-list"></i></div>
+    <h1>Pauta do Comitê</h1>
+    <p>Crédito Atacado · Corporate</p>
+    <div class="login-error" id="login-error">Usuário ou senha incorretos.</div>
+    <div class="field">
+      <label>Usuário</label>
+      <input type="text" id="inp-user" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="inp-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="topbar">
+    <div class="topbar-left">
+      <i class="ti ti-clipboard-list" style="font-size:20px"></i>
+      <h1>Pauta do Comitê de Crédito</h1>
+      <span id="sync-status"><i class="ti ti-cloud-check" style="font-size:14px"></i>sincronizado</span>
+    </div>
+    <div class="topbar-right">
+      <div class="badge-live"><span class="dot"></span>ao vivo</div>
+      <button class="btn success" onclick="exportarTexto()"><i class="ti ti-brand-whatsapp"></i><span class="hide-sm">Exportar</span></button>
+      <button class="btn primary" onclick="salvarPauta()"><i class="ti ti-device-floppy"></i><span class="hide-sm">Fechar pauta</span></button>
+      <button class="btn sm" onclick="doLogout()" title="Sair"><i class="ti ti-logout"></i></button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('pauta',this)"><i class="ti ti-list" style="margin-right:5px;font-size:14px"></i>Pauta atual</button>
+      <button class="tab" onclick="setTab('historico',this)"><i class="ti ti-history" style="margin-right:5px;font-size:14px"></i>Histórico</button>
+    </div>
+
+    <div id="tab-pauta">
+      <div class="date-bar">
+        <i class="ti ti-calendar-event" style="font-size:18px;color:var(--text2)"></i>
+        <label>Data do comitê:</label>
+        <input type="date" id="data-comite" onchange="onDataChange()">
+        <div id="data-display" style="color:var(--text3);font-size:13px">Nenhuma data selecionada</div>
+      </div>
+
+      <div class="stats-row" id="stats-row"></div>
+
+      <div class="add-form">
+        <h3><i class="ti ti-plus" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Adicionar empresa à pauta</h3>
+        <div class="form-grid">
+          <div class="fg">
+            <label>Nome da empresa</label>
+            <input type="text" id="inp-empresa" placeholder="Ex: Empresa XYZ S.A." onkeydown="if(event.key==='Enter')adicionar()">
+          </div>
+          <div class="fg">
+            <label>Analista responsável</label>
+            <input type="text" id="inp-analista" placeholder="Nome do analista" onkeydown="if(event.key==='Enter')adicionar()">
+          </div>
+          <div class="fg">
+            <label>Alçada</label>
+            <select id="inp-alcada">
+              <option value="Alçada 3">Alçada 3</option>
+              <option value="Alçada 2">Alçada 2</option>
+              <option value="Alçada 1">Alçada 1</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Regional</label>
+            <select id="inp-regional"></select>
+          </div>
+        </div>
+        <button class="btn primary" onclick="adicionar()"><i class="ti ti-plus"></i>Adicionar à pauta</button>
+      </div>
+
+      <div id="pauta-container"></div>
+    </div>
+
+    <div id="tab-historico" style="display:none">
+      <div id="historico-container"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ══════════════════════════════════════════════════════
+  //  🔧 COLE AQUI AS CONFIGURAÇÕES DO SEU FIREBASE
+  // ══════════════════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyBfrXjo1A3bel5GEEvsqOywsMQm_oDUPDA",
+    authDomain: "pauta-comite.firebaseapp.com",
+    databaseURL: "https://pauta-comite-default-rtdb.firebaseio.com",
+    projectId: "pauta-comite",
+    storageBucket: "pauta-comite.firebasestorage.app",
+    messagingSenderId: "564652683131",
+    appId: "1:564652683131:web:27906eaa85acbd4d3997de"
+  };
+  // ══════════════════════════════════════════════════════
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const REGIONAIS = ["Corporate","São Paulo Capital","São Paulo ABC","São Paulo Interior","Centro-Oeste","Nordeste","RJ / MG / ES","Sul"];
+  const ALCADAS = ["Alçada 3","Alçada 2","Alçada 1"];
+
+  let pauta = {};
+  let historico = [];
+  let dataComite = '';
+  let loggedIn = false;
+
+  REGIONAIS.forEach(r => { pauta[r] = []; });
+
+  // ── AUTH ──
+  window.doLogin = function() {
+    const u = document.getElementById('inp-user').value.trim().toLowerCase();
+    const p = document.getElementById('inp-pass').value;
+    if(u === 'admin' && p === 'c6bank') {
+      loggedIn = true;
+      sessionStorage.setItem('auth','1');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+      document.getElementById('login-error').style.display = 'none';
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  };
+
+  window.doLogout = function() {
+    sessionStorage.removeItem('auth');
+    location.reload();
+  };
+
+  // ── FIREBASE SYNC ──
+  function setSyncStatus(msg, icon) {
+    document.getElementById('sync-status').innerHTML = `<i class="ti ${icon}" style="font-size:14px"></i>${msg}`;
+  }
+
+  async function saveToFirebase() {
+    setSyncStatus('salvando...','ti-cloud-upload');
+    try {
+      await set(ref(db, 'pauta'), { regionais: pauta, dataComite, updatedAt: Date.now() });
+      await set(ref(db, 'historico'), historico);
+      setSyncStatus('sincronizado','ti-cloud-check');
+    } catch(e) {
+      setSyncStatus('erro ao salvar','ti-cloud-x');
+      toast('⚠ Erro ao salvar no servidor');
+    }
+  }
+
+  function listenFirebase() {
+    onValue(ref(db, 'pauta'), (snap) => {
+      const data = snap.val();
+      if(data) {
+        REGIONAIS.forEach(r => { pauta[r] = (data.regionais && data.regionais[r]) ? data.regionais[r] : []; });
+        dataComite = data.dataComite || '';
+        const inp = document.getElementById('data-comite');
+        if(inp) inp.value = dataComite;
+        updateDateDisplay();
+      }
+      render();
+    });
+
+    onValue(ref(db, 'historico'), (snap) => {
+      historico = snap.val() || [];
+      if(document.getElementById('tab-historico').style.display !== 'none') renderHistorico();
+    });
+  }
+
+  // ── HELPERS ──
+  function formatDateBR(iso) {
+    if(!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  function diaSemana(iso) {
+    if(!iso) return '';
+    const [y,m,d] = iso.split('-').map(Number);
+    return ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'][new Date(y,m-1,d).getDay()];
+  }
+  function diffDias(iso) {
+    if(!iso) return null;
+    const [y,m,d] = iso.split('-').map(Number);
+    const alvo = new Date(y,m-1,d);
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    return Math.round((alvo-hoje)/86400000);
+  }
+  function esc(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function alcadaClass(a) {
+    return a==='Alçada 1'?'a1':a==='Alçada 2'?'a2':'a3';
+  }
+  function totalGlobal() {
+    return REGIONAIS.reduce((s,r)=>s+(pauta[r]||[]).length,0);
+  }
+  function countAlcada(al) {
+    return REGIONAIS.reduce((s,r)=>s+(pauta[r]||[]).filter(e=>e.alcada===al).length,0);
+  }
+
+  window.toast = function(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2500);
+  };
+
+  // ── DATE ──
+  window.onDataChange = function() {
+    dataComite = document.getElementById('data-comite').value;
+    updateDateDisplay();
+    saveToFirebase();
+  };
+
+  function updateDateDisplay() {
+    const el = document.getElementById('data-display');
+    if(!el) return;
+    if(!dataComite) { el.innerHTML = '<span style="color:var(--text3);font-size:13px">Nenhuma data selecionada</span>'; return; }
+    const diff = diffDias(dataComite);
+    let badge = '';
+    if(diff===0) badge='<span style="background:var(--success-bg);color:var(--success-text);font-size:11px;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:600">hoje</span>';
+    else if(diff===1) badge='<span style="background:var(--warning-bg);color:var(--warning-text);font-size:11px;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:600">amanhã</span>';
+    else if(diff>1) badge=`<span style="background:var(--warning-bg);color:var(--warning-text);font-size:11px;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:600">em ${diff} dias</span>`;
+    else badge=`<span style="background:var(--danger-bg);color:var(--danger-text);font-size:11px;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:600">há ${Math.abs(diff)} dia(s)</span>`;
+    el.innerHTML = `<strong>${formatDateBR(dataComite)}</strong> — ${diaSemana(dataComite)}${badge}`;
+  }
+
+  // ── TABS ──
+  window.setTab = function(tab, el) {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-pauta').style.display = tab==='pauta'?'':'none';
+    document.getElementById('tab-historico').style.display = tab==='historico'?'':'none';
+    if(tab==='historico') renderHistorico();
+  };
+
+  // ── RENDER STATS ──
+  function renderStats() {
+    const total = totalGlobal();
+    const regs = REGIONAIS.filter(r=>(pauta[r]||[]).length>0).length;
+    document.getElementById('stats-row').innerHTML =
+      `<div class="stat-card"><div class="lbl">Total de casos</div><div class="val">${total}</div></div>
+       <div class="stat-card"><div class="lbl">Regionais ativas</div><div class="val">${regs}</div></div>
+       <div class="stat-card"><div class="lbl">Alçada 3</div><div class="val">${countAlcada('Alçada 3')}</div></div>
+       <div class="stat-card"><div class="lbl">Alçada 2</div><div class="val">${countAlcada('Alçada 2')}</div></div>
+       <div class="stat-card"><div class="lbl">Alçada 1</div><div class="val">${countAlcada('Alçada 1')}</div></div>`;
+  }
+
+  // ── RENDER PAUTA ──
+  function renderPauta() {
+    const cont = document.getElementById('pauta-container');
+    if(!cont) return;
+    cont.innerHTML = '';
+    ALCADAS.forEach(alcada => {
+      const totalAl = countAlcada(alcada);
+      const cls = alcadaClass(alcada);
+      const block = document.createElement('div');
+      block.className = 'alcada-block';
+      let regionaisHTML = '';
+      let numLocal = 1;
+      let alguma = false;
+      REGIONAIS.forEach(regional => {
+        const items = (pauta[regional]||[]).filter(e=>e.alcada===alcada);
+        if(!items.length) return;
+        alguma = true;
+        const bodyId = 'body_'+alcada.replace(/\s/g,'_')+'_'+regional.replace(/[\s\/]+/g,'_');
+        const chevId = 'chev_'+alcada.replace(/\s/g,'_')+'_'+regional.replace(/[\s\/]+/g,'_');
+        let rowsHTML = items.map((e,i) => {
+          const globalIdx = (pauta[regional]||[]).indexOf(e);
+          return `<div class="company-row">
+            <span class="company-num">${numLocal+i}.</span>
+            <div class="company-info">
+              <div class="company-name">${esc(e.empresa)}</div>
+              <div class="company-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>${esc(e.analista)}</div>
+            </div>
+            <span class="badge ${cls}">${esc(alcada)}</span>
+            <button class="btn sm danger" onclick="remover('${regional.replace(/'/g,"\\'")}',${globalIdx})"><i class="ti ti-x"></i>Retirar</button>
+          </div>`;
+        }).join('');
+        numLocal += items.length;
+        regionaisHTML += `<div class="regional-section">
+          <div class="regional-header" onclick="toggleSec('${bodyId}','${chevId}')">
+            <div class="regional-header-left">
+              <span class="regional-name">${regional}</span>
+              <span class="regional-count">${items.length} ${items.length===1?'caso':'casos'}</span>
+            </div>
+            <i class="ti ti-chevron-down chevron" id="${chevId}"></i>
+          </div>
+          <div class="companies-list" id="${bodyId}">${rowsHTML}</div>
+        </div>`;
+      });
+      if(!alguma) regionaisHTML = `<div class="empty">Nenhum caso nesta alçada</div>`;
+      block.innerHTML = `
+        <div class="alcada-block-header ${cls}-hdr">
+          <span class="title">Comitê ${alcada}</span>
+          <span class="count">${totalAl} ${totalAl===1?'caso':'casos'}</span>
+        </div>
+        ${regionaisHTML}`;
+      cont.appendChild(block);
+    });
+  }
+
+  window.toggleSec = function(bodyId, chevId) {
+    document.getElementById(bodyId).classList.toggle('hidden');
+    document.getElementById(chevId).classList.toggle('rot');
+  };
+
+  // ── ADD / REMOVE ──
+  function populateSelects() {
+    const sel = document.getElementById('inp-regional');
+    if(!sel) return;
+    sel.innerHTML = '';
+    REGIONAIS.forEach(r => { const o = document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
+  }
+
+  window.adicionar = function() {
+    const empresa = document.getElementById('inp-empresa').value.trim();
+    const analista = document.getElementById('inp-analista').value.trim();
+    const alcada = document.getElementById('inp-alcada').value;
+    const regional = document.getElementById('inp-regional').value;
+    if(!empresa) { toast('⚠ Informe o nome da empresa'); return; }
+    if(!analista) { toast('⚠ Informe o analista responsável'); return; }
+    if(!pauta[regional]) pauta[regional] = [];
+    pauta[regional].push({ empresa, analista, alcada, ts: Date.now() });
+    document.getElementById('inp-empresa').value = '';
+    document.getElementById('inp-analista').value = '';
+    toast(`✓ ${empresa} adicionada — ${regional} / ${alcada}`);
+    saveToFirebase();
+  };
+
+  window.remover = function(regional, idx) {
+    const nome = pauta[regional][idx].empresa;
+    pauta[regional].splice(idx, 1);
+    toast(`Removido: ${nome}`);
+    saveToFirebase();
+  };
+
+  // ── EXPORT ──
+  function buildTexto(pData, dataLabel) {
+    const total = REGIONAIS.reduce((s,r)=>s+(pData[r]||[]).length,0);
+    let lines = [`*PAUTA DO COMITÊ DE CRÉDITO*`, `📅 ${dataLabel}`, `📋 Total: ${total} caso(s)`];
+    ALCADAS.forEach(alcada => {
+      const totalAl = REGIONAIS.reduce((s,r)=>s+(pData[r]||[]).filter(e=>e.alcada===alcada).length,0);
+      if(!totalAl) return;
+      lines.push('', `*Comitê ${alcada}*`);
+      let num = 1;
+      REGIONAIS.forEach(regional => {
+        const items = (pData[regional]||[]).filter(e=>e.alcada===alcada);
+        if(!items.length) return;
+        lines.push('', `_${regional}_`);
+        items.forEach(e => { lines.push(`${num}. ${e.empresa}`); num++; });
+      });
+    });
+    return lines.join('\n');
+  }
+
+  window.exportarTexto = function() {
+    if(totalGlobal()===0) { toast('⚠ A pauta está vazia'); return; }
+    const dataLabel = dataComite ? formatDateBR(dataComite)+' — '+diaSemana(dataComite) : new Date().toLocaleDateString('pt-BR');
+    const texto = buildTexto(pauta, dataLabel);
+    const blob = new Blob([texto], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `pauta_${dataComite||'comite'}.txt`; a.click();
+    toast('✓ Arquivo gerado — pronto para o WhatsApp');
+  };
+
+  // ── FECHAR PAUTA ──
+  window.salvarPauta = function() {
+    const total = totalGlobal();
+    if(total===0) { toast('⚠ A pauta está vazia'); return; }
+    const now = new Date();
+    const entry = {
+      id: Date.now(),
+      dataComite,
+      dataCriacao: now.toLocaleDateString('pt-BR'),
+      hora: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),
+      total,
+      regionais: JSON.parse(JSON.stringify(pauta))
+    };
+    if(!Array.isArray(historico)) historico = [];
+    historico.unshift(entry);
+    REGIONAIS.forEach(r=>{ pauta[r]=[]; });
+    dataComite = '';
+    document.getElementById('data-comite').value = '';
+    updateDateDisplay();
+    toast(`✓ Pauta fechada e arquivada (${total} casos)`);
+    saveToFirebase();
+  };
+
+  // ── HISTÓRICO ──
+  function renderHistorico() {
+    const cont = document.getElementById('historico-container');
+    if(!cont) return;
+    if(!historico || !historico.length) {
+      cont.innerHTML = '<div class="empty" style="margin-top:1rem">Nenhuma pauta fechada ainda.</div>';
+      return;
+    }
+    cont.innerHTML = '<div class="history-list">'+historico.map((h,hi)=>{
+      const dataLabel = h.dataComite ? formatDateBR(h.dataComite)+' — '+diaSemana(h.dataComite) : h.dataCriacao;
+      const ativos = REGIONAIS.filter(r=>(h.regionais[r]||[]).length>0);
+      let bodyContent = '';
+      ALCADAS.forEach(alcada=>{
+        const totalAl = REGIONAIS.reduce((s,r)=>s+(h.regionais[r]||[]).filter(e=>e.alcada===alcada).length,0);
+        if(!totalAl) return;
+        bodyContent += `<div class="h-alcada-title">Comitê ${alcada}</div>`;
+        let num=1;
+        REGIONAIS.forEach(r=>{
+          const items=(h.regionais[r]||[]).filter(e=>e.alcada===alcada);
+          if(!items.length) return;
+          bodyContent+=`<div class="h-regional"><div class="h-regional-name">${r}</div>`;
+          items.forEach(e=>{ bodyContent+=`<div class="h-company">${num}. ${esc(e.empresa)} <span style="color:var(--text2)">— ${esc(e.analista)}</span></div>`; num++; });
+          bodyContent+=`</div>`;
+        });
+      });
+      return `<div class="history-card">
+        <div class="history-card-header" onclick="toggleHist(${hi})">
+          <div>
+            <div class="hdate"><i class="ti ti-calendar-event" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Comitê de ${dataLabel}</div>
+            <div class="hinfo">Salvo em ${h.dataCriacao} às ${h.hora} · ${h.total} caso(s) · ${ativos.length} regional(is)</div>
+          </div>
+          <i class="ti ti-chevron-down" id="hicon-${hi}" style="font-size:16px;transition:transform 0.2s"></i>
+        </div>
+        <div class="history-card-body" id="hbody-${hi}">
+          ${bodyContent}
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="btn sm success" onclick="exportarHist(${hi})"><i class="ti ti-brand-whatsapp"></i>Exportar</button>
+            <button class="btn sm danger" onclick="deletarHist(${hi})"><i class="ti ti-trash"></i>Excluir</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+  }
+
+  window.toggleHist = function(i) {
+    const body = document.getElementById('hbody-'+i);
+    const icon = document.getElementById('hicon-'+i);
+    const open = body.classList.toggle('open');
+    icon.style.transform = open?'rotate(180deg)':'';
+  };
+
+  window.exportarHist = function(hi) {
+    const h = historico[hi];
+    const dataLabel = h.dataComite ? formatDateBR(h.dataComite)+' — '+diaSemana(h.dataComite) : h.dataCriacao;
+    const texto = buildTexto(h.regionais, dataLabel);
+    const blob = new Blob([texto],{type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=`pauta_${(h.dataComite||h.dataCriacao).replace(/\//g,'-')}.txt`; a.click();
+    toast('✓ Exportado');
+  };
+
+  window.deletarHist = async function(i) {
+    historico.splice(i,1);
+    await set(ref(db,'historico'), historico);
+    renderHistorico();
+    toast('Pauta removida do histórico');
+  };
+
+  // ── RENDER ──
+  function render() { renderStats(); renderPauta(); }
+
+  // ── INIT ──
+  document.addEventListener('DOMContentLoaded', async () => {
+    populateSelects();
+
+    // Checa sessão
+    if(sessionStorage.getItem('auth')==='1') {
+      document.getElementById('login-screen').style.display='none';
+      document.getElementById('app-screen').style.display='block';
+    }
+
+    // Testa conexão Firebase
+    try {
+      await get(ref(db,'ping'));
+      document.getElementById('loading-overlay').style.display='none';
+      listenFirebase();
+    } catch(e) {
+      document.getElementById('loading-overlay').innerHTML =
+        `<i class="ti ti-wifi-off" style="font-size:32px;color:var(--text2)"></i>
+         <p style="font-size:14px;color:var(--danger-text)">Erro ao conectar ao Firebase.<br>Verifique as configurações em index.html.</p>`;
+    }
+  });
+</script>
+</body>
+</html>
