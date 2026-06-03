@@ -446,6 +446,7 @@ function renderHist(){
       '<i class="ti ti-chevron-down" id="hi'+hi+'" style="font-size:16px;transition:transform .2s"></i></div>'+
       '<div class="hcard-b" id="hb'+hi+'">'+bc+
       '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+      '<button class="btn btn-sm" onclick="copyH('+hi+')"><i class="ti ti-clipboard"></i>Copiar</button>'+
       '<button class="btn btn-suc btn-sm" onclick="expH('+hi+')"><i class="ti ti-brand-whatsapp"></i>Exportar</button>'+
       '<button class="btn btn-dan btn-sm" onclick="delH('+hi+')"><i class="ti ti-trash"></i>Excluir</button></div></div></div>';
   }).join('')+'</div>';
@@ -468,6 +469,25 @@ function expH(hi){
   const blob=new Blob([L.join('\n')],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pauta_'+(h.dataComite||h.dataCriacao).replace(/\//g,'-')+'.txt'; a.click();
   toast('✓ Exportado');
+}
+
+function copyH(hi){
+  const h=hist[hi];
+  const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
+  let L=['*PAUTA DO COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+h.total+' caso(s)'];
+  ALCS.forEach(alc=>{
+    const tA=REGS.reduce((s,r)=>s+(h.regionais[r]||[]).filter(e=>e.alcada===alc).length,0); if(!tA)return;
+    L.push('','*Comitê '+alc+'*'); let n=1;
+    REGS.forEach(r=>{
+      const it=(h.regionais[r]||[]).filter(e=>e.alcada===alc); if(!it.length)return;
+      L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;});
+    });
+  });
+  const txt=L.join('
+');
+  navigator.clipboard.writeText(txt).then(()=>toast('✓ Pauta copiada!')).catch(()=>{
+    const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); toast('✓ Copiado!');
+  });
 }
 
 function delH(i){
