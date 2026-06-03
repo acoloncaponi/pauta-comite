@@ -248,7 +248,7 @@
     db.ref('pautas/' + key).set({ regionais: pauta, dataComite: dataComite, updatedAt: Date.now() })
       .then(() => {
         db.ref('historico').set(historico.length ? historico : null);
-        setSyncStatus('sincronizado','ti-cloud-check'); render();
+        setSyncStatus('sincronizado','ti-cloud-check');
       })
       .catch(e => {
         console.error(e);
@@ -256,8 +256,6 @@
         showToast('⚠ Erro: ' + e.message);
       });
   }
-
-  let listenerStarted = false;
 
   let currentDateRef = null;
 
@@ -529,15 +527,17 @@
       document.getElementById('login-screen').style.display='none';
       document.getElementById('app-screen').style.display='block';
     }
+    let started = false;
     db.ref('.info/connected').on('value', snap => {
-      document.getElementById('loading-overlay').style.display='none';
       if(snap.val()===true) {
-        setSyncStatus('sincronizado','ti-cloud-check'); render();
-        if(!listenerStarted) { listenerStarted = true; listenFirebase(); }
+        document.getElementById('loading-overlay').style.display='none';
+        setSyncStatus('sincronizado','ti-cloud-check');
+        if(!started) { started = true; listenFirebase(); }
       } else {
         setSyncStatus('reconectando...','ti-cloud-x');
       }
     });
+    setTimeout(() => { document.getElementById('loading-overlay').style.display='none'; }, 5000);
   };
 </script>
 </body>
