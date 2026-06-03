@@ -385,6 +385,7 @@
     document.getElementById('inp-empresa').value = '';
     document.getElementById('inp-analista').value = '';
     showToast('✓ ' + empresa + ' adicionada');
+    render();
     saveToFirebase();
   }
 
@@ -392,6 +393,7 @@
     const nome = pauta[regional][idx].empresa;
     pauta[regional].splice(idx, 1);
     showToast('Removido: ' + nome);
+    render();
     saveToFirebase();
   }
 
