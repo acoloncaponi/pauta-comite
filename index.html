@@ -154,6 +154,7 @@
     </div>
     <div class="topbar-right">
       <div class="badge-live"><span class="dot"></span>ao vivo</div>
+      <button class="btn" onclick="copiarPauta()" id="btn-copiar"><i class="ti ti-clipboard"></i>Copiar</button>
       <button class="btn success" onclick="exportarTexto()"><i class="ti ti-brand-whatsapp"></i>Exportar</button>
       <button class="btn primary" onclick="salvarPauta()"><i class="ti ti-device-floppy"></i>Fechar pauta</button>
       <button class="btn sm" onclick="doLogout()" title="Sair"><i class="ti ti-logout"></i></button>
@@ -237,9 +238,14 @@
     document.getElementById('sync-status').innerHTML = '<i class="ti '+icon+'" style="font-size:14px"></i>' + msg;
   }
 
+  function dateKey() {
+    return dataComite || 'sem-data';
+  }
+
   function saveToFirebase() {
     setSyncStatus('salvando...','ti-cloud-upload');
-    db.ref('pauta').set({ regionais: pauta, dataComite: dataComite, updatedAt: Date.now() })
+    const key = dateKey();
+    db.ref('pautas/' + key).set({ regionais: pauta, dataComite: dataComite, updatedAt: Date.now() })
       .then(() => {
         db.ref('historico').set(historico.length ? historico : null);
         setSyncStatus('sincronizado','ti-cloud-check'); render();
@@ -253,22 +259,32 @@
 
   let listenerStarted = false;
 
+  let currentDateRef = null;
+
   function listenFirebase() {
-    db.ref('pauta').on('value', snap => {
-      const data = snap.val();
-      if(data) {
-        REGIONAIS.forEach(r => { pauta[r] = (data.regionais && data.regionais[r]) ? data.regionais[r] : []; });
-        dataComite = data.dataComite || '';
-        const inp = document.getElementById('data-comite');
-        if(inp) inp.value = dataComite;
-        updateDateDisplay();
-      }
-      render();
-    });
     db.ref('historico').on('value', snap => {
       historico = snap.val() || [];
       if(!Array.isArray(historico)) historico = Object.values(historico);
       if(document.getElementById('tab-historico').style.display !== 'none') renderHistorico();
+    });
+    // Listen to today's date by default
+    const today = new Date().toISOString().split('T')[0];
+    if(!dataComite) {
+      dataComite = today;
+      const inp = document.getElementById('data-comite');
+      if(inp) inp.value = dataComite;
+      updateDateDisplay();
+    }
+    listenDate(dataComite);
+  }
+
+  function listenDate(key) {
+    if(currentDateRef) currentDateRef.off();
+    currentDateRef = db.ref('pautas/' + key);
+    currentDateRef.on('value', snap => {
+      const data = snap.val();
+      REGIONAIS.forEach(r => { pauta[r] = (data && data.regionais && data.regionais[r]) ? data.regionais[r] : []; });
+      render();
     });
   }
 
@@ -303,7 +319,10 @@
 
   function onDataChange() {
     dataComite = document.getElementById('data-comite').value;
-    updateDateDisplay(); saveToFirebase();
+    updateDateDisplay();
+    REGIONAIS.forEach(r => { pauta[r] = []; });
+    render();
+    if(dataComite) listenDate(dataComite);
   }
 
   function updateDateDisplay() {
@@ -423,14 +442,36 @@
     showToast('✓ Arquivo gerado');
   }
 
+  function copiarPauta() {
+    if(totalGlobal()===0) { showToast('⚠ A pauta está vazia'); return; }
+    const dataLabel = dataComite ? formatDateBR(dataComite)+' — '+diaSemana(dataComite) : new Date().toLocaleDateString('pt-BR');
+    const texto = buildTexto(pauta, dataLabel);
+    navigator.clipboard.writeText(texto).then(() => {
+      const btn = document.getElementById('btn-copiar');
+      btn.innerHTML = '<i class="ti ti-clipboard-check"></i>Copiado!';
+      showToast('✓ Pauta copiada para a área de transferência');
+      setTimeout(() => { btn.innerHTML = '<i class="ti ti-clipboard"></i>Copiar'; }, 2500);
+    }).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = texto; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('✓ Pauta copiada!');
+    });
+  }
+
   function salvarPauta() {
     const total = totalGlobal(); if(total===0) { showToast('⚠ A pauta está vazia'); return; }
     const now = new Date();
+    const keyFechada = dateKey();
     if(!Array.isArray(historico)) historico = [];
     historico.unshift({ id: Date.now(), dataComite, dataCriacao: now.toLocaleDateString('pt-BR'), hora: now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}), total, regionais: JSON.parse(JSON.stringify(pauta)) });
+    // Remove pauta ativa do Firebase e salva histórico
+    db.ref('pautas/' + keyFechada).remove();
+    db.ref('historico').set(historico);
     REGIONAIS.forEach(r=>{ pauta[r]=[]; }); dataComite='';
     document.getElementById('data-comite').value=''; updateDateDisplay();
-    showToast('✓ Pauta fechada ('+total+' casos)'); saveToFirebase();
+    render();
+    showToast('✓ Pauta fechada ('+total+' casos)');
   }
 
   function renderHistorico() {
