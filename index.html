@@ -246,13 +246,16 @@ function fbSave(){
 }
 
 function fbListen(key){
-  // Remove listener anterior
-  if(dbListener){ dbListener(); dbListener=null; }
-  if(!key){ REGS.forEach(r=>pauta[r]=[]); render(); return; }
+  // Remove listener anterior da referência guardada
+  if(dbListener){ dbListener.ref.off('value', dbListener.fn); dbListener=null; }
+  // Limpa pauta local antes de carregar nova data
+  REGS.forEach(r=>pauta[r]=[]);
+  render();
+  if(!key){ return; }
 
   sync('carregando...','ti-refresh');
   const ref = DB.ref('pautas/'+key);
-  dbListener = ref.on('value',
+  const fn = ref.on('value',
     snap=>{
       const d = snap.val();
       if(d && d.regionais){
@@ -265,6 +268,7 @@ function fbListen(key){
     },
     err=>{ sync('erro','ti-cloud-x'); toast('Erro ao carregar dados: '+err.message); }
   );
+  dbListener = { ref, fn };
 }
 
 // ── DATA ──
