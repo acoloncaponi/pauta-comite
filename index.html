@@ -68,7 +68,7 @@
     .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
     .ab{margin-bottom:2rem}
     .abh{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid}
-    .abh .ti{font-size:15px;font-weight:600}
+    .abh .atitle{font-size:15px;font-weight:600}
     .abh .ct{font-size:12px;color:var(--text2);background:var(--bg);border:.5px solid var(--border);padding:2px 8px;border-radius:20px}
     .a3h{border-color:#f09595;color:#791f1f}
     .a2h{border-color:#fac775;color:#633806}
@@ -227,29 +227,39 @@ function setSS(m,ic) {
 
 // ── FIREBASE: escuta pauta de uma data específica ──
 function escutaData(key) {
-  // Remove listener anterior
-  if(refAtiva) { refAtiva.off(); refAtiva = null; }
-  if(!key) { REG.forEach(r=>pauta[r]=[]); render(); return; }
+  // Cancela listener anterior se existir
+  if(refAtiva) { refAtiva.off('value'); refAtiva = null; }
+  REG.forEach(r=>pauta[r]=[]);
+  render();
+  if(!key) return;
 
+  setSS('carregando...','ti-cloud');
   refAtiva = db.ref('pautas/'+key);
   refAtiva.on('value', snap => {
     const d = snap.val();
-    REG.forEach(r => { pauta[r] = (d && d.regionais && d.regionais[r]) ? d.regionais[r] : []; });
+    if(d && d.regionais) {
+      REG.forEach(r => { pauta[r] = Array.isArray(d.regionais[r]) ? d.regionais[r] : []; });
+    } else {
+      REG.forEach(r => { pauta[r] = []; });
+    }
     render();
     setSS('sincronizado','ti-cloud-check');
   }, err => {
     setSS('erro','ti-cloud-x');
-    console.error(err);
+    toast('⚠ Erro ao carregar: '+err.message);
   });
 }
 
 function salvar() {
   if(!dataAtiva) return;
   setSS('salvando...','ti-cloud-upload');
+  const snapshot = JSON.parse(JSON.stringify(pauta));
   db.ref('pautas/'+dataAtiva).set({
-    regionais: pauta,
+    regionais: snapshot,
     dataComite: dataAtiva,
     updatedAt: Date.now()
+  }).then(() => {
+    setSS('sincronizado','ti-cloud-check');
   }).catch(e => { setSS('erro ao salvar','ti-cloud-x'); toast('⚠ '+e.message); });
 }
 
@@ -349,9 +359,9 @@ function renderPauta() {
         '<div class="cl" id="'+bid+'">'+rows+'</div></div>';
     });
     if(!alguma) rHTML='<div class="emp">Nenhum caso nesta alçada</div>';
-    bl.innerHTML='<div class="abh '+cls+'h"><span class="ti2">Comitê '+alc+'</span><span class="ct">'+tAl+' '+(tAl===1?'caso':'casos')+'</span></div>'+rHTML;
+    bl.innerHTML='<div class="abh '+cls+'h"><span class="atitle">Comitê '+alc+'</span><span class="ct">'+tAl+' '+(tAl===1?'caso':'casos')+'</span></div>'+rHTML;
     // Fix: use proper class for title inside abh
-    bl.querySelector('.ti2').className='ti';
+    bl.querySelector('.atitle').className='atitle';
     cont.appendChild(bl);
   });
 }
