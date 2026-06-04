@@ -382,6 +382,8 @@ function renderPauta(){
       (isCustom ? '<button onclick="resetOrdemAlcada('+alcIdx+')" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline">↺ restaurar padrão</button>' : '')+
     '</div>';
     let num=1; let temItem=false;
+    const alcIdx = ALCS.indexOf(alc);
+    const regsComCasos = ordemAlc.filter(r => (pauta[r]||[]).filter(e=>e.alcada===alc).length > 0);
     ordemAlc.forEach(function(reg, regIdx){
       const items=(pauta[reg]||[]).filter(e=>e.alcada===alc);
       if(!items.length)return; temItem=true;
@@ -390,8 +392,13 @@ function renderPauta(){
       let rows=items.map((e,i)=>{
         const gi=(pauta[reg]||[]).indexOf(e);
         const regIdx2 = REGS.indexOf(reg);
-        const upCase = i>0 ? '<button onclick="moverCaso('+regIdx2+','+gi+',-1)" title="Mover para cima" style="background:none;border:none;cursor:pointer;color:#888;font-size:11px;padding:1px 2px;line-height:1;font-weight:bold">▲</button>' : '<span style="width:16px;display:inline-block"></span>';
-        const dnCase = i<items.length-1 ? '<button onclick="moverCaso('+regIdx2+','+gi+',1)" title="Mover para baixo" style="background:none;border:none;cursor:pointer;color:#888;font-size:11px;padding:1px 2px;line-height:1;font-weight:bold">▼</button>' : '<span style="width:16px;display:inline-block"></span>';
+        const caseStyle = 'background:none;border:none;cursor:pointer;font-size:11px;padding:1px 3px;line-height:1;font-weight:bold;border-radius:3px;transition:all 0.15s;';
+        const upCase = i>0
+          ? '<button onclick="moverCaso('+regIdx2+','+gi+',-1)" title="Mover para cima" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▲</button>'
+          : '<span style="width:18px;display:inline-block"></span>';
+        const dnCase = i<items.length-1
+          ? '<button onclick="moverCaso('+regIdx2+','+gi+',1)" title="Mover para baixo" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▼</button>'
+          : '<span style="width:18px;display:inline-block"></span>';
         return '<div class="item">'+
           '<div style="display:flex;flex-direction:column;line-height:1.3;flex-shrink:0;margin-right:2px">'+upCase+dnCase+'</div>'+
           '<span class="item-num">'+(num+i)+'.</span>'+
@@ -401,9 +408,15 @@ function renderPauta(){
           '<button class="btn btn-dan btn-sm" onclick="doRem('+regIdx2+','+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
       }).join('');
       num+=items.length;
-      const alcIdx = ALCS.indexOf(alc);
-      const upBtn = regIdx>0 ? '<button onclick="moverRegional('+alcIdx+','+regIdx+',-1)" title="Mover regional para cima" style="background:none;border:none;cursor:pointer;color:#888;font-size:13px;padding:1px 3px;line-height:1;font-weight:bold">▲</button>' : '<span style="width:20px;display:inline-block"></span>';
-      const dnBtn = regIdx<ordemAlc.length-1 ? '<button onclick="moverRegional('+alcIdx+','+regIdx+',1)" title="Mover regional para baixo" style="background:none;border:none;cursor:pointer;color:#888;font-size:13px;padding:1px 3px;line-height:1;font-weight:bold">▼</button>' : '<span style="width:20px;display:inline-block"></span>';
+      const posInCasos = regsComCasos.indexOf(reg);
+      const totalComCasos = regsComCasos.length;
+      const rBtnStyle = 'background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;font-weight:bold;border-radius:4px;transition:all 0.15s;';
+      const upBtn = (totalComCasos > 1 && posInCasos > 0)
+        ? '<button onclick="moverRegional('+alcIdx+','+regIdx+',-1)" title="Mover regional para cima" style="'+rBtnStyle+'color:#555" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#555&quot;;this.style.background=&quot;none&quot;">▲</button>'
+        : '<span style="width:26px;display:inline-block"></span>';
+      const dnBtn = (totalComCasos > 1 && posInCasos < totalComCasos - 1)
+        ? '<button onclick="moverRegional('+alcIdx+','+regIdx+',1)" title="Mover regional para baixo" style="'+rBtnStyle+'color:#555" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#555&quot;;this.style.background=&quot;none&quot;">▼</button>'
+        : '<span style="width:26px;display:inline-block"></span>';
       inner+='<div class="reg-sec">'+
         '<div class="reg-head">'+
         '<div class="reg-head-l">'+
@@ -452,33 +465,18 @@ function getOrdemAlcada(alc) {
 function moverRegional(alcIdx, fromIdx, dir) {
   const alc = ALCS[alcIdx];
   if(!alc) return;
-  // Inicializa ordem customizada desta alçada se não existir
   if(!ordemCustom[alc] || !Array.isArray(ordemCustom[alc])) {
     ordemCustom[alc] = getRegsOrdem(dataAtiva).slice();
   }
   const ordem = ordemCustom[alc];
   const toIdx = fromIdx + dir;
   if(toIdx < 0 || toIdx >= ordem.length) return;
-  // Swap
   const tmp = ordem[fromIdx]; ordem[fromIdx] = ordem[toIdx]; ordem[toIdx] = tmp;
-  // Temporarily detach Firebase listener to prevent overwrite
-  if(dbListener){ dbListener.ref.off('value', dbListener.fn); }
+  _saving = true;
   render();
-  fbSave().then(() => {
-    // Reattach listener after save completes
-    if(dataAtiva) {
-      const ref = DB.ref('pautas/'+dataAtiva);
-      const fn = ref.on('value', snap=>{
-        if(_saving) return;
-        const d = snap.val();
-        if(d && d.regionais){ REGS.forEach(r=>{ pauta[r] = Array.isArray(d.regionais[r]) ? d.regionais[r] : []; }); }
-        else { REGS.forEach(r=>{ pauta[r]=[]; }); }
-        retirados = (d && Array.isArray(d.retirados)) ? d.retirados : [];
-        if(!_saving){ ordemCustom = (d && d.ordemCustom && typeof d.ordemCustom==='object') ? d.ordemCustom : {}; render(); }
-      });
-      dbListener = { ref, fn };
-    }
-  });
+  DB.ref('pautas/'+dataAtiva+'/ordemCustom').set(ordemCustom)
+    .then(()=>{ sync('sincronizado','ti-cloud-check'); setTimeout(()=>{ _saving=false; },800); })
+    .catch(e=>{ sync('erro','ti-cloud-x'); _saving=false; });
 }
 
 function resetOrdemAlcada(alcIdx) {
