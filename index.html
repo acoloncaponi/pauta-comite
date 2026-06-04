@@ -275,8 +275,11 @@ function doLogin(){
 function doLogout(){ sessionStorage.removeItem('auth'); location.reload(); }
 
 // ── FIREBASE ──
+let _saving = false;
+
 function fbSave(){
   if(!dataAtiva){ toast('⚠ Selecione a data primeiro'); return; }
+  _saving = true;
   sync('salvando...','ti-cloud-upload');
   DB.ref('pautas/'+dataAtiva).set({
     regionais: pauta,
@@ -285,7 +288,7 @@ function fbSave(){
     dataComite: dataAtiva,
     ts: Date.now()
   })
-  .then(()=>{ sync('sincronizado','ti-cloud-check'); })
+  .then(()=>{ sync('sincronizado','ti-cloud-check'); setTimeout(()=>{ _saving=false; },500); })
   .catch(e=>{ sync('ERRO: '+e.code,'ti-cloud-x'); toast('Erro Firebase: '+e.message); console.error(e); });
 }
 
@@ -458,8 +461,8 @@ function moverRegional(alcIdx, fromIdx, dir) {
   if(toIdx < 0 || toIdx >= ordem.length) return;
   // Swap
   const tmp = ordem[fromIdx]; ordem[fromIdx] = ordem[toIdx]; ordem[toIdx] = tmp;
-  fbSave();
-  render();
+  render(); // render first with local state
+  fbSave(); // then persist
 }
 
 function resetOrdemAlcada(alcIdx) {
