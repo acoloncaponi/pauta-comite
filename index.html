@@ -281,7 +281,7 @@ function fbSave(){
   if(!dataAtiva){ toast('⚠ Selecione a data primeiro'); return; }
   _saving = true;
   sync('salvando...','ti-cloud-upload');
-  DB.ref('pautas/'+dataAtiva).set({
+  return DB.ref('pautas/'+dataAtiva).set({
     regionais: pauta,
     retirados: retirados.length ? retirados : null,
     ordemCustom: Object.keys(ordemCustom).length ? ordemCustom : null,
@@ -461,8 +461,24 @@ function moverRegional(alcIdx, fromIdx, dir) {
   if(toIdx < 0 || toIdx >= ordem.length) return;
   // Swap
   const tmp = ordem[fromIdx]; ordem[fromIdx] = ordem[toIdx]; ordem[toIdx] = tmp;
-  render(); // render first with local state
-  fbSave(); // then persist
+  // Temporarily detach Firebase listener to prevent overwrite
+  if(dbListener){ dbListener.ref.off('value', dbListener.fn); }
+  render();
+  fbSave().then(() => {
+    // Reattach listener after save completes
+    if(dataAtiva) {
+      const ref = DB.ref('pautas/'+dataAtiva);
+      const fn = ref.on('value', snap=>{
+        if(_saving) return;
+        const d = snap.val();
+        if(d && d.regionais){ REGS.forEach(r=>{ pauta[r] = Array.isArray(d.regionais[r]) ? d.regionais[r] : []; }); }
+        else { REGS.forEach(r=>{ pauta[r]=[]; }); }
+        retirados = (d && Array.isArray(d.retirados)) ? d.retirados : [];
+        if(!_saving){ ordemCustom = (d && d.ordemCustom && typeof d.ordemCustom==='object') ? d.ordemCustom : {}; render(); }
+      });
+      dbListener = { ref, fn };
+    }
+  });
 }
 
 function resetOrdemAlcada(alcIdx) {
