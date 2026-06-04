@@ -307,15 +307,21 @@ function fbListen(key){
   const fn = ref.on('value',
     snap=>{
       const d = snap.val();
-      if(d && d.regionais){
-        REGS.forEach(r=>{ pauta[r] = Array.isArray(d.regionais[r]) ? d.regionais[r] : []; });
+      if(!_saving) {
+        if(d && d.regionais){
+          REGS.forEach(r=>{ pauta[r] = Array.isArray(d.regionais[r]) ? d.regionais[r] : []; });
+        } else {
+          REGS.forEach(r=>{ pauta[r]=[]; });
+        }
+        retirados = (d && Array.isArray(d.retirados)) ? d.retirados : [];
+        ordemCustom = (d && d.ordemCustom && typeof d.ordemCustom === 'object') ? d.ordemCustom : {};
+        sync('sincronizado','ti-cloud-check');
+        render();
       } else {
-        REGS.forEach(r=>{ pauta[r]=[]; });
+        // During save: only update ordemCustom from server (our local state is correct)
+        if(d && d.ordemCustom) ordemCustom = d.ordemCustom;
+        sync('sincronizado','ti-cloud-check');
       }
-      retirados = (d && Array.isArray(d.retirados)) ? d.retirados : [];
-      ordemCustom = (d && d.ordemCustom && typeof d.ordemCustom === 'object') ? d.ordemCustom : {};
-      sync('sincronizado','ti-cloud-check');
-      render();
     },
     err=>{ sync('erro','ti-cloud-x'); toast('Erro ao carregar dados: '+err.message); }
   );
