@@ -7,148 +7,205 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:#f4f3f0;color:#1a1a18;min-height:100vh}
-#loading{position:fixed;inset:0;background:#f4f3f0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9999}
-#loading p{font-size:14px;color:#888}
-.spin{width:28px;height:28px;border:2px solid #ddd;border-top-color:#b8973a;border-radius:50%;animation:spin .7s linear infinite}
+:root{
+  --gold:#c9a84c;--gold2:#e8c96a;--gold-dim:#7a6030;
+  --bg:#0f0f0f;--bg2:#181818;--bg3:#1e1e1e;--bg4:#252525;
+  --text:#f0ead8;--text2:#a89878;--text3:#5a5040;
+  --border:#2a2520;--border2:#3a3328;
+  --red:#c0392b;--red-dim:#7a1f17;--red-bg:#1e0f0e;
+  --green:#2d7a3a;--green-dim:#1a4a22;
+  --r:6px;--rl:10px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
+
+/* LOADING */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:9999}
+#loading p{font-size:13px;color:var(--text2);letter-spacing:.1em;text-transform:uppercase}
+.spin{width:32px;height:32px;border:1.5px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-#login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;background:#f4f3f0}
-.login-box{background:#fff;border:1px solid #e8e6e0;border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 4px 24px rgba(0,0,0,.06)}
-.login-icon{width:48px;height:48px;background:linear-gradient(135deg,#b8973a,#d4af55);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem}
-.login-icon i{font-size:22px;color:#fff}
-.login-box h1{font-size:20px;font-weight:600;margin-bottom:4px;color:#1a1a18}
-.login-box p{font-size:13px;color:#888;margin-bottom:1.75rem}
-.field{margin-bottom:1rem}
-.field label{display:block;font-size:11px;color:#888;margin-bottom:6px;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
-.field input{width:100%;padding:10px 14px;border:1px solid #e0ddd6;border-radius:8px;font-size:14px;background:#faf9f7;color:#1a1a18;font-family:inherit;transition:border-color .15s}
-.field input:focus{outline:none;border-color:#b8973a}
-#login-err{font-size:13px;color:#a0522d;background:#fff5ee;border:1px solid #f5c8a0;padding:8px 12px;border-radius:8px;margin-bottom:1rem;display:none}
-.btn-entrar{width:100%;padding:11px;background:linear-gradient(135deg,#b8973a,#d4af55);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .15s;letter-spacing:.02em}
-.btn-entrar:hover{opacity:.9}
+
+/* LOGIN */
+#login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;background:var(--bg);background-image:radial-gradient(ellipse at 50% 0%, rgba(201,168,76,.08) 0%, transparent 60%)}
+.login-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:2.5rem 2.25rem;width:100%;max-width:400px}
+.login-header{margin-bottom:2rem;text-align:center}
+.login-header .brand{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem}
+.login-header h1{font-size:22px;font-weight:300;color:var(--text);letter-spacing:.05em}
+.login-header h1 span{font-weight:600;color:var(--gold)}
+.login-header p{font-size:12px;color:var(--text2);margin-top:.4rem;letter-spacing:.05em}
+.field{margin-bottom:1.1rem}
+.field label{display:block;font-size:10px;color:var(--text2);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.12em}
+.field input{width:100%;padding:10px 14px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;background:var(--bg3);color:var(--text);font-family:inherit;transition:border-color .15s}
+.field input:focus{outline:none;border-color:var(--gold)}
+.field input::placeholder{color:var(--text3)}
+#login-err{font-size:12px;color:#e07060;background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.25);padding:8px 12px;border-radius:var(--r);margin-bottom:1rem;display:none;letter-spacing:.02em}
+.btn-entrar{width:100%;padding:11px;background:var(--gold);color:#0f0f0f;border:none;border-radius:var(--r);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.08em;text-transform:uppercase;transition:opacity .15s}
+.btn-entrar:hover{opacity:.88}
+.login-footer{margin-top:1.5rem;text-align:center;font-size:11px;color:var(--text3);letter-spacing:.05em}
+
+/* APP */
 #app{display:none}
-.topbar{background:#fff;border-bottom:1px solid #e8e6e0;padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,.04)}
-.topbar-l{display:flex;align-items:center;gap:14px}
-.topbar-logo{width:32px;height:32px;background:linear-gradient(135deg,#b8973a,#d4af55);border-radius:8px;display:flex;align-items:center;justify-content:center}
-.topbar-logo i{font-size:16px;color:#fff}
-.topbar-divider{width:1px;height:20px;background:#e8e6e0}
-.topbar-l h1{font-size:14px;font-weight:500;color:#555}
-.topbar-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.live{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:#7a9e6e;background:#f0f7ed;padding:3px 10px;border-radius:20px;border:1px solid #c8e0bf}
-.live-dot{width:6px;height:6px;border-radius:50%;background:#7a9e6e;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.sync{font-size:12px;color:#aaa;display:flex;align-items:center;gap:4px}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border:1px solid #e0ddd6;border-radius:8px;background:#fff;color:#555;font-size:13px;font-family:inherit;cursor:pointer;transition:all .12s}
-.btn:hover{background:#faf9f7;border-color:#ccc;color:#1a1a18}
-.btn-pri{background:linear-gradient(135deg,#b8973a,#d4af55);color:#fff;border:none;font-weight:600}
-.btn-pri:hover{opacity:.9}
-.btn-suc{background:#fff;color:#5a8a4e;border-color:#b8d9ae}
-.btn-suc:hover{background:#f0f7ed}
-.btn-dan{color:#c0392b;border-color:#f0b8b0}
-.btn-dan:hover{background:#fff5f5}
-.btn-warn{color:#b8973a;border-color:#e8d89a}
-.btn-warn:hover{background:#fdf9ee}
-.btn-sm{padding:4px 8px;font-size:12px}
-main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
-.tabs{display:flex;border-bottom:1px solid #e8e6e0;margin-bottom:1.5rem}
-.tab{padding:9px 18px;font-size:13px;cursor:pointer;color:#aaa;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:all .15s}
-.tab:hover{color:#555}
-.tab.on{color:#1a1a18;font-weight:500;border-bottom-color:#b8973a}
-.tab-green:hover{color:#2d7a3a}
-.tab-green.on{color:#2d7a3a;border-bottom-color:#2d7a3a}
-.tab-red:hover{color:#c0392b}
-.tab-red.on{color:#c0392b;border-bottom-color:#c0392b}
-.btn-red{background:#c0392b;color:#fff;border-color:#c0392b;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;border-width:1px;border-style:solid}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 1.5rem;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-l{display:flex;align-items:center;gap:12px}
+.topbar-logo{width:30px;height:30px;background:var(--gold);border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.topbar-logo i{font-size:15px;color:#0f0f0f}
+.topbar-divider{width:1px;height:18px;background:var(--border2)}
+.topbar-l h1{font-size:13px;font-weight:500;color:var(--text2);letter-spacing:.04em}
+#topbar-title{color:var(--text2);font-weight:500;font-size:13px;letter-spacing:.04em}
+.topbar-r{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.live{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--gold);background:rgba(201,168,76,.1);padding:3px 9px;border-radius:20px;border:1px solid rgba(201,168,76,.2);letter-spacing:.05em;text-transform:uppercase}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.sync{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;letter-spacing:.03em}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border2);border-radius:var(--r);background:transparent;color:var(--text2);font-size:12px;font-family:inherit;cursor:pointer;transition:all .12s;letter-spacing:.03em}
+.btn:hover{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.btn-pri{background:var(--gold);color:#0f0f0f;border-color:var(--gold);font-weight:600}
+.btn-pri:hover{opacity:.88;background:var(--gold)}
+.btn-suc{background:transparent;color:var(--gold);border-color:var(--gold-dim)}
+.btn-suc:hover{background:rgba(201,168,76,.08)}
+.btn-dan{color:#e07060;border-color:rgba(192,57,43,.3)}
+.btn-dan:hover{background:rgba(192,57,43,.08)}
+.btn-warn{color:var(--gold);border-color:var(--gold-dim)}
+.btn-warn:hover{background:rgba(201,168,76,.08)}
+.btn-red{background:var(--red);color:#fff;border-color:var(--red);font-weight:600;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--r);font-size:12px;font-family:inherit;cursor:pointer;border-style:solid;border-width:1px;letter-spacing:.03em}
 .btn-red:hover{opacity:.88}
-.btn-red-outline{background:#fff;color:#c0392b;border:1px solid #f0b8b0;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer}
-.btn-red-outline:hover{background:#fff5f5}
-.date-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #e8e6e0;border-radius:12px;padding:12px 16px;margin-bottom:1.25rem}
-.date-bar label{font-size:13px;color:#888;white-space:nowrap}
-.date-bar input[type=date]{padding:6px 10px;border:1px solid #e0ddd6;border-radius:8px;font-size:14px;font-weight:500;background:#faf9f7;color:#1a1a18;font-family:inherit;cursor:pointer}
-.date-bar input:focus{outline:none;border-color:#b8973a}
-#date-label{font-size:14px;font-weight:500;flex:1}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.25rem}
-.stat{background:#fff;border-radius:8px;padding:12px 14px;border:1px solid #e8e6e0}
-.stat .lb{font-size:12px;color:#aaa;margin-bottom:4px}
-.stat .vl{font-size:24px;font-weight:600;color:#1a1a18}
-.form-box{background:#fff;border:1px solid #e8e6e0;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem}
-.form-box h3{font-size:14px;font-weight:500;margin-bottom:12px;color:#1a1a18}
+.btn-red-outline{background:transparent;color:var(--red);border:1px solid rgba(192,57,43,.4);display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--r);font-size:12px;font-family:inherit;cursor:pointer;letter-spacing:.03em}
+.btn-red-outline:hover{background:var(--red-bg)}
+.btn-sm{padding:3px 7px;font-size:11px}
+
+/* MAIN */
+main{max-width:920px;margin:0 auto;padding:1.5rem 1rem 4rem}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.5rem;gap:0;overflow-x:auto}
+.tab{padding:9px 16px;font-size:12px;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:all .15s;letter-spacing:.05em;font-weight:500;text-transform:uppercase;white-space:nowrap}
+.tab:hover{color:var(--text2)}
+.tab-green.on{color:#4aad5a;border-bottom-color:#4aad5a}
+.tab-green:hover{color:#4aad5a}
+.tab-red.on{color:#e07060;border-bottom-color:#e07060}
+.tab-red:hover{color:#e07060}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* DATE BAR */
+.date-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:11px 16px;margin-bottom:1.25rem}
+.date-bar label{font-size:11px;color:var(--text2);white-space:nowrap;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.date-bar input[type=date]{padding:5px 10px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;font-weight:500;background:var(--bg3);color:var(--text);font-family:inherit;cursor:pointer;color-scheme:dark}
+.date-bar input:focus{outline:none;border-color:var(--gold)}
+#date-label,#date-label-pre{font-size:13px;font-weight:500;flex:1}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1.25rem}
+.stat{background:var(--bg2);border-radius:var(--r);padding:12px 14px;border:1px solid var(--border)}
+.stat .lb{font-size:10px;color:var(--text2);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+.stat .vl{font-size:26px;font-weight:300;color:var(--gold)}
+
+/* FORM */
+.form-box{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:1.25rem;margin-bottom:1.5rem}
+.form-box h3{font-size:11px;font-weight:600;margin-bottom:14px;color:var(--text2);letter-spacing:.1em;text-transform:uppercase}
 .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px}
-.fg{display:flex;flex-direction:column;gap:4px}
-.fg label{font-size:11px;color:#aaa;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
-.fg input,.fg select{padding:8px 10px;border:1px solid #e0ddd6;border-radius:8px;font-size:13px;background:#faf9f7;color:#1a1a18;font-family:inherit}
-.fg input:focus,.fg select:focus{outline:none;border-color:#b8973a}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.1em}
+.fg input,.fg select{padding:8px 10px;border:1px solid var(--border2);border-radius:var(--r);font-size:13px;background:var(--bg3);color:var(--text);font-family:inherit;transition:border-color .15s}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--gold)}
+.fg input::placeholder{color:var(--text3)}
+.fg select option{background:var(--bg3);color:var(--text)}
+
+/* ALCADA BLOCKS */
 .alc-block{margin-bottom:2rem}
-.alc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid}
-.alc-head .alc-name{font-size:15px;font-weight:600}
-.alc-head .alc-ct{font-size:12px;color:#aaa;background:#faf9f7;border:1px solid #e8e6e0;padding:2px 8px;border-radius:20px}
-.h-a3{border-color:#f0b8b0;color:#c0392b}
-.h-a2{border-color:#e8d89a;color:#a07820}
-.h-a1{border-color:#a8c8e8;color:#2c6ea0}
-.reg-sec{margin-bottom:10px}
-.reg-head{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:#faf9f7;border:1px solid #e8e6e0;border-radius:8px;cursor:pointer;user-select:none;margin-bottom:5px;transition:background .1s}
-.reg-head:hover{background:#f4f3f0}
+.alc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid}
+.alc-head .alc-name{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.alc-head .alc-ct{font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border2);padding:2px 8px;border-radius:20px}
+.h-a3{border-color:rgba(192,57,43,.4);color:#e07060}
+.h-a2{border-color:rgba(201,168,76,.4);color:var(--gold)}
+.h-a1{border-color:rgba(74,173,90,.3);color:#4aad5a}
+
+/* REGIONAIS */
+.reg-sec{margin-bottom:8px}
+.reg-head{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;user-select:none;margin-bottom:4px;transition:background .1s}
+.reg-head:hover{background:var(--bg4)}
 .reg-head-l{display:flex;align-items:center;gap:8px}
-.reg-name{font-size:13px;font-weight:500;color:#1a1a18}
-.reg-ct{font-size:12px;color:#aaa;background:#fff;border:1px solid #e8e6e0;padding:1px 7px;border-radius:20px}
-.chevron{font-size:15px;transition:transform .2s;color:#ccc}
+.reg-name{font-size:12px;font-weight:600;color:var(--text);letter-spacing:.04em;text-transform:uppercase}
+.reg-ct{font-size:11px;color:var(--text3);background:var(--bg2);border:1px solid var(--border);padding:1px 7px;border-radius:20px}
+.chevron{font-size:13px;transition:transform .2s;color:var(--text3)}
 .chevron.rot{transform:rotate(-90deg)}
-.items{display:flex;flex-direction:column;gap:5px}
+
+/* ITEMS */
+.items{display:flex;flex-direction:column;gap:4px}
 .items.hide{display:none}
-.item{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#fff;border:1px solid #e8e6e0;border-radius:8px;transition:background .1s}
-.item:hover{background:#faf9f7}
-.item-num{font-size:13px;color:#ccc;width:22px;text-align:right;font-weight:600;flex-shrink:0}
+.item{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);transition:background .1s}
+.item:hover{background:var(--bg3)}
+.item-num{font-size:12px;color:var(--text3);width:20px;text-align:right;font-weight:600;flex-shrink:0;font-variant-numeric:tabular-nums}
 .item-info{flex:1;min-width:0}
-.item-name{font-size:14px;font-weight:500;color:#1a1a18;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-meta{font-size:12px;color:#aaa;margin-top:1px}
-.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
-.ba1{background:#e8f2fb;color:#2c6ea0;border:1px solid #a8c8e8}
-.ba2{background:#fdf8e8;color:#a07820;border:1px solid #e8d89a}
-.ba3{background:#fdf0ee;color:#c0392b;border:1px solid #f0b8b0}
-.empty{padding:14px;text-align:center;font-size:13px;color:#ccc;border:1px dashed #e0ddd6;border-radius:8px}
-/* Casos Retirados */
+.item-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-meta{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:.02em}
+
+/* BADGES */
+.badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0;letter-spacing:.05em;text-transform:uppercase}
+.ba1{background:rgba(74,173,90,.12);color:#4aad5a;border:1px solid rgba(74,173,90,.2)}
+.ba2{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid rgba(201,168,76,.2)}
+.ba3{background:rgba(192,57,43,.12);color:#e07060;border:1px solid rgba(192,57,43,.2)}
+
+/* EMPTY */
+.empty{padding:16px;text-align:center;font-size:12px;color:var(--text3);border:1px dashed var(--border2);border-radius:var(--r);letter-spacing:.03em}
+
+/* RETIRADOS */
 .retirados-block{margin-top:2rem;margin-bottom:2rem}
-.retirados-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #e0ddd6}
-.retirados-head .ret-name{font-size:15px;font-weight:600;color:#aaa}
-.retirados-head .ret-ct{font-size:12px;color:#aaa;background:#faf9f7;border:1px solid #e8e6e0;padding:2px 8px;border-radius:20px}
-.item-ret{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#faf9f7;border:1px solid #e8e6e0;border-radius:8px;opacity:.7}
-.item-ret .item-name{color:#aaa;text-decoration:line-through}
-.item-ret .item-meta{color:#ccc}
-/* histórico */
-.hist-list{display:flex;flex-direction:column;gap:10px}
-.hcard{background:#fff;border:1px solid #e8e6e0;border-radius:12px;overflow:hidden}
-.hcard-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#faf9f7;cursor:pointer;transition:background .1s}
-.hcard-h:hover{background:#f4f3f0}
-.hcard-h .hd{font-size:14px;font-weight:500;color:#1a1a18}
-.hcard-h .hi{font-size:12px;color:#aaa;margin-top:2px}
+.retirados-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border2)}
+.retirados-head .ret-name{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
+.retirados-head .ret-ct{font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:2px 8px;border-radius:20px}
+.item-ret{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);opacity:.5}
+.item-ret .item-name{color:var(--text3);text-decoration:line-through}
+.item-ret .item-meta{color:var(--text3)}
+
+/* ORDER BANNER */
+#pauta-el > div:first-child[style*="background"]{background:var(--bg3)!important;border:1px solid var(--border2)!important}
+
+/* HISTORY */
+.hist-list{display:flex;flex-direction:column;gap:8px}
+.hcard{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden}
+.hcard-h{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:var(--bg3);cursor:pointer;transition:background .1s}
+.hcard-h:hover{background:var(--bg4)}
+.hcard-h .hd{font-size:13px;font-weight:500;color:var(--text)}
+.hcard-h .hi{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:.02em}
 .hcard-b{padding:12px 16px;display:none}
 .hcard-b.open{display:block}
-.h-alc{font-size:13px;font-weight:600;margin:10px 0 5px;padding-bottom:4px;border-bottom:1px solid #e8e6e0;color:#1a1a18}
+.h-alc{font-size:11px;font-weight:700;margin:10px 0 5px;padding-bottom:4px;border-bottom:1px solid var(--border);color:var(--gold);text-transform:uppercase;letter-spacing:.08em}
 .h-reg{margin-bottom:8px}
-.h-reg-name{font-size:11px;font-weight:500;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}
-.h-item{font-size:13px;padding:3px 0;border-bottom:1px solid #f4f3f0;color:#555}
-.h-ret-title{font-size:13px;font-weight:600;margin:10px 0 5px;padding-bottom:4px;border-bottom:1px solid #e8e6e0;color:#aaa}
-.h-ret-item{font-size:13px;padding:3px 0;border-bottom:1px solid #f4f3f0;color:#aaa;text-decoration:line-through}
-#toast-el{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a18;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9999;white-space:nowrap}
+.h-reg-name{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.h-item{font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);color:var(--text2)}
+.h-ret-title{font-size:10px;font-weight:700;margin:10px 0 5px;padding-bottom:4px;border-bottom:1px solid var(--border);color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.h-ret-item{font-size:12px;padding:3px 0;border-bottom:1px solid var(--border);color:var(--text3);text-decoration:line-through}
+
+/* ORDER CUSTOM BADGE */
+span[style*="ordem customizada"]{background:rgba(201,168,76,.12)!important;color:var(--gold)!important;border-color:rgba(201,168,76,.25)!important}
+
+/* TOAST */
+#toast-el{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg4);color:var(--text);border:1px solid var(--border2);padding:10px 18px;border-radius:var(--r);font-size:12px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9999;white-space:nowrap;letter-spacing:.03em}
 #toast-el.show{opacity:1}
 
+@media(max-width:600px){.topbar{padding:0 1rem}.tab{padding:8px 10px;font-size:10px}}
 </style>
 </head>
 <body>
 
-<div id="loading"><div class="spin"></div><p>Conectando...</p></div>
+<div id="loading"><div class="spin"></div><p>Carregando plataforma</p></div>
 
 <div id="login-wrap">
   <div class="login-box">
-    <div class="login-icon"><i class="ti ti-clipboard-list"></i></div>
-    <h1>Pauta do Comitê</h1>
-    <p>Insira suas credenciais de acesso</p>
+    <div class="login-header">
+      <div class="brand">Crédito Atacado · Gestão de Pauta</div>
+      <h1><span>Comitê</span> de Crédito PJ</h1>
+      <p>Acesso restrito · Insira suas credenciais</p>
+    </div>
     <div id="login-err">Usuário ou senha incorretos.</div>
     <div class="field"><label>Usuário</label><input type="text" id="f-user" placeholder="Seu usuário de acesso" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="field"><label>Senha</label><input type="password" id="f-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="btn-entrar" onclick="doLogin()">Entrar</button>
+    <button class="btn-entrar" onclick="doLogin()">Acessar Plataforma</button>
+    <div class="login-footer">Uso interno · Área de Crédito Corporativo</div>
   </div>
 </div>
 
@@ -157,34 +214,34 @@ main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
     <div class="topbar-l">
       <div class="topbar-logo"><i class="ti ti-clipboard-list"></i></div>
       <div class="topbar-divider"></div>
-      <h1 id="topbar-title">Pauta Comitês</h1>
+      <h1 id="topbar-title">Gestão de Pauta · Comitês</h1>
       <div class="sync" id="sync-el"><i class="ti ti-cloud-check" style="font-size:14px"></i>sincronizado</div>
     </div>
     <div class="topbar-r">
       <div class="live"><span class="live-dot"></span>ao vivo</div>
       <button class="btn" id="btn-copy" onclick="ctxCopy()"><i class="ti ti-clipboard"></i>Copiar</button>
       <button class="btn btn-suc" id="btn-export" onclick="ctxExport()"><i class="ti ti-brand-whatsapp"></i>Exportar</button>
-      <button class="btn btn-pri" id="btn-close" onclick="ctxClose()"><i class="ti ti-device-floppy"></i>Fechar pauta</button>
+      <button class="btn btn-pri" id="btn-close" onclick="ctxClose()"><i class="ti ti-lock"></i>Encerrar Pauta</button>
       <button class="btn btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i></button>
     </div>
   </div>
   <main>
     <div class="tabs">
-      <button class="tab on tab-green" onclick="goTab('pauta',this)"><i class="ti ti-list" style="margin-right:5px;font-size:14px"></i>Pauta Comitês</button>
-      <button class="tab tab-green" onclick="goTab('hist',this)"><i class="ti ti-history" style="margin-right:5px;font-size:14px"></i>Histórico Pauta Comitês</button>
-      <button class="tab tab-red" onclick="goTab('pre',this)"><i class="ti ti-clipboard-check" style="margin-right:5px;font-size:14px"></i>Pré Comitê</button>
-      <button class="tab tab-red" onclick="goTab('prehist',this)"><i class="ti ti-history" style="margin-right:5px;font-size:14px"></i>Histórico Pré Comitês</button>
+      <button class="tab on tab-green" onclick="goTab('pauta',this)">⬡ Pauta Comitês</button>
+      <button class="tab tab-green" onclick="goTab('hist',this)">◷ Histórico · Comitês</button>
+      <button class="tab tab-red" onclick="goTab('pre',this)">◈ Pré Comitê</button>
+      <button class="tab tab-red" onclick="goTab('prehist',this)">◷ Histórico · Pré Comitê</button>
     </div>
     <div id="tab-pauta">
       <div class="date-bar">
         <i class="ti ti-calendar-event" style="font-size:18px;color:#6b6b67"></i>
-        <label>Data do comitê:</label>
+        <label>Data do Comitê</label>
         <input type="date" id="inp-date" onchange="onDateChange()">
         <div id="date-label" style="color:#a0a09c;font-size:13px">Nenhuma data selecionada</div>
       </div>
       <div class="stats" id="stats-el"></div>
       <div class="form-box">
-        <h3><i class="ti ti-plus" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Adicionar empresa à pauta</h3>
+        <h3>Incluir Caso na Pauta</h3>
         <div class="form-grid">
           <div class="fg"><label>Nome da empresa</label><input type="text" id="inp-emp" placeholder="Ex: Empresa XYZ S.A." onkeydown="if(event.key==='Enter')doAdd()"></div>
           <div class="fg"><label>Analista responsável</label><input type="text" id="inp-ana" placeholder="Nome do analista" onkeydown="if(event.key==='Enter')doAdd()"></div>
@@ -199,13 +256,13 @@ main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
     <div id="tab-pre" style="display:none">
       <div class="date-bar">
         <i class="ti ti-calendar-event" style="font-size:18px;color:#888"></i>
-        <label>Data do pré comitê:</label>
+        <label>Data do Pré Comitê</label>
         <input type="date" id="inp-date-pre" onchange="onDateChangePre()">
         <div id="date-label-pre" style="color:#a0a09c;font-size:13px">Nenhuma data selecionada</div>
       </div>
       <div class="stats" id="stats-pre-el"></div>
       <div class="form-box">
-        <h3><i class="ti ti-plus" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Adicionar empresa ao Pré Comitê</h3>
+        <h3>Incluir Caso no Pré Comitê</h3>
         <div class="form-grid">
           <div class="fg"><label>Nome da empresa</label><input type="text" id="inp-emp-pre" placeholder="Ex: Empresa XYZ S.A." onkeydown="if(event.key==='Enter')doAddPre()"></div>
           <div class="fg"><label>Analista responsável</label><input type="text" id="inp-ana-pre" placeholder="Nome do analista" onkeydown="if(event.key==='Enter')doAddPre()"></div>
@@ -379,10 +436,10 @@ function updateDateLabel(){
   if(!dataAtiva){ el.innerHTML='<span style="color:#a0a09c;font-size:13px">Nenhuma data selecionada</span>'; return; }
   const diff = diffDays(dataAtiva);
   let badge='';
-  if(diff===0) badge=' <span style="background:#fdf8e8;color:#a07820;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">hoje</span>';
-  else if(diff===1) badge=' <span style="background:#fdf8e8;color:#a07820;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">amanhã</span>';
-  else if(diff>1) badge=' <span style="background:#fdf8e8;color:#a07820;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">em '+diff+' dias</span>';
-  else badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">há '+Math.abs(diff)+' dia(s)</span>';
+  if(diff===0) badge=' <span style="background:rgba(201,168,76,.1);color:#c9a84c;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">hoje</span>';
+  else if(diff===1) badge=' <span style="background:rgba(201,168,76,.1);color:#c9a84c;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">amanhã</span>';
+  else if(diff>1) badge=' <span style="background:rgba(201,168,76,.1);color:#c9a84c;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">em '+diff+' dias</span>';
+  else badge=' <span style="background:rgba(192,57,43,.1);color:#e07060;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">há '+Math.abs(diff)+' dia(s)</span>';
   el.innerHTML='<strong>'+fmtDate(dataAtiva)+'</strong> — '+weekday(dataAtiva)+badge;
 }
 
@@ -402,9 +459,9 @@ function renderPauta(){
   const ordemSemana = getRegsOrdem(dataAtiva);
   // Banner de ordem semanal
   const banner = document.createElement('div');
-  banner.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 14px;background:#f0ede6;border:1px solid #e0ddd6;border-radius:8px;margin-bottom:1.25rem;flex-wrap:wrap';
-  banner.innerHTML='<span style="font-size:11px;color:#aaa;font-weight:500;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Ordem desta semana:</span>'+
-    ordemSemana.map((r,i)=>'<span style="font-size:12px;color:'+(i===0?'#b8973a':'#bbb')+'">'+r+(i<ordemSemana.length-1?' <span style="color:#ddd">›</span>':'')+' </span>').join('');
+  banner.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 14px;background:#1a1814;border:1px solid #2a2520;border-radius:6px;margin-bottom:1.25rem;flex-wrap:wrap';
+  banner.innerHTML='<span style="font-size:10px;color:#5a5040;font-weight:700;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap">Ordem desta semana</span>'+
+    ordemSemana.map((r,i)=>'<span style="font-size:11px;color:'+(i===0?'#c9a84c':'#3a3328')+';font-weight:'+(i===0?'600':'400')+'">'+r+(i<ordemSemana.length-1?' <span style="color:#2a2520">›</span>':'')+' </span>').join('');
   wrap.appendChild(banner);
   ALCS.forEach(alc=>{
     const tA=totAlc(alc), cl=acls2(alc);
@@ -416,7 +473,7 @@ function renderPauta(){
       '<div style="display:flex;align-items:center;gap:10px">'+
         '<span class="alc-name">Comitê '+alc+'</span>'+
         '<span class="alc-ct">'+tA+' '+(tA===1?'caso':'casos')+'</span>'+
-        (isCustom ? '<span style="font-size:11px;background:#fdf8e8;color:#b8973a;border:1px solid #e8d89a;padding:1px 7px;border-radius:20px;font-weight:500">ordem customizada</span>' : '')+
+        (isCustom ? '<span style="font-size:11px;background:rgba(201,168,76,.08);color:#c9a84c;border:1px solid #e8d89a;padding:1px 7px;border-radius:20px;font-weight:500">ordem customizada</span>' : '')+
       '</div>'+
       (isCustom ? '<button onclick="resetOrdemAlcada('+alcIdx+')" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline">↺ restaurar padrão</button>' : '')+
     '</div>';
@@ -434,10 +491,10 @@ function renderPauta(){
         const regIdx2 = REGS.indexOf(reg);
         const caseStyle = 'background:none;border:none;cursor:pointer;font-size:11px;padding:1px 3px;line-height:1;font-weight:bold;border-radius:3px;transition:all 0.15s;';
         const upCase = i>0
-          ? '<button onclick="moverCaso('+regIdx2+','+gi+',-1)" title="Mover para cima" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▲</button>'
+          ? '<button onclick="moverCaso('+regIdx2+','+gi+',-1)" title="Mover para cima" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#c9a84c&quot;;this.style.background=&quot;rgba(201,168,76,.08)&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▲</button>'
           : '<span style="width:18px;display:inline-block"></span>';
         const dnCase = i<items.length-1
-          ? '<button onclick="moverCaso('+regIdx2+','+gi+',1)" title="Mover para baixo" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▼</button>'
+          ? '<button onclick="moverCaso('+regIdx2+','+gi+',1)" title="Mover para baixo" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#c9a84c&quot;;this.style.background=&quot;rgba(201,168,76,.08)&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▼</button>'
           : '<span style="width:18px;display:inline-block"></span>';
         return '<div class="item">'+
           '<div style="display:flex;flex-direction:column;line-height:1.3;flex-shrink:0;margin-right:2px">'+upCase+dnCase+'</div>'+
@@ -450,10 +507,10 @@ function renderPauta(){
       num+=items.length;
       const rBtnSt = 'background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;font-weight:bold;border-radius:4px;';
       const upBtn = (totalComCasos > 1 && posInCasos > 0)
-        ? '<button onclick="moverRegional('+alcIdx+','+posInCasos+',-1)" title="Mover para cima" style="'+rBtnSt+'color:#555" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#555&quot;;this.style.background=&quot;none&quot;">▲</button>'
+        ? '<button onclick="moverRegional('+alcIdx+','+posInCasos+',-1)" title="Mover para cima" style="'+rBtnSt+'color:#555" onmouseover="this.style.color=&quot;#c9a84c&quot;;this.style.background=&quot;rgba(201,168,76,.08)&quot;" onmouseout="this.style.color=&quot;#555&quot;;this.style.background=&quot;none&quot;">▲</button>'
         : '<span style="width:26px;display:inline-block"></span>';
       const dnBtn = (totalComCasos > 1 && posInCasos < totalComCasos - 1)
-        ? '<button onclick="moverRegional('+alcIdx+','+posInCasos+',1)" title="Mover para baixo" style="'+rBtnSt+'color:#555" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#555&quot;;this.style.background=&quot;none&quot;">▼</button>'
+        ? '<button onclick="moverRegional('+alcIdx+','+posInCasos+',1)" title="Mover para baixo" style="'+rBtnSt+'color:#555" onmouseover="this.style.color=&quot;#c9a84c&quot;;this.style.background=&quot;rgba(201,168,76,.08)&quot;" onmouseout="this.style.color=&quot;#555&quot;;this.style.background=&quot;none&quot;">▼</button>'
         : '<span style="width:26px;display:inline-block"></span>';
       inner+='<div class="reg-sec">'+
         '<div class="reg-head">'+
@@ -573,17 +630,17 @@ function goTab(t,el){
   if(t==='prehist') renderPreHist();
   // Update topbar based on tab
   const isPre = t==='pre'||t==='prehist';
-  $('topbar-title').textContent = isPre ? 'Pré Comitê de Crédito' : 'Pauta Comitês';
+  $('topbar-title').textContent = isPre ? 'Pré Comitê · Crédito PJ' : 'Gestão de Pauta · Comitês';
   $('btn-copy').style.display = (t==='hist'||t==='prehist') ? 'none' : '';
   $('btn-export').style.display = (t==='hist'||t==='prehist') ? 'none' : '';
   $('btn-close').style.display = (t==='hist'||t==='prehist') ? 'none' : '';
   if(isPre){
     $('btn-close').className='btn btn-red';
-    $('btn-close').innerHTML='<i class="ti ti-device-floppy"></i>Fechar Pré Comitê';
+    $('btn-close').innerHTML='<i class="ti ti-lock"></i>Encerrar Pré Comitê';
     $('btn-export').className='btn btn-suc';
   } else {
     $('btn-close').className='btn btn-pri';
-    $('btn-close').innerHTML='<i class="ti ti-device-floppy"></i>Fechar pauta';
+    $('btn-close').innerHTML='<i class="ti ti-lock"></i>Encerrar Pauta';
     $('btn-export').className='btn btn-suc';
   }
 }
@@ -841,10 +898,10 @@ function updateDateLabelPre(){
   if(!dataAtivaPre){ el.innerHTML='<span style="color:#a0a09c;font-size:13px">Nenhuma data selecionada</span>'; return; }
   const diff = diffDays(dataAtivaPre);
   let badge='';
-  if(diff===0) badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">hoje</span>';
-  else if(diff===1) badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">amanhã</span>';
-  else if(diff>1) badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">em '+diff+' dias</span>';
-  else badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">há '+Math.abs(diff)+' dia(s)</span>';
+  if(diff===0) badge=' <span style="background:rgba(192,57,43,.1);color:#e07060;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">hoje</span>';
+  else if(diff===1) badge=' <span style="background:rgba(192,57,43,.1);color:#e07060;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">amanhã</span>';
+  else if(diff>1) badge=' <span style="background:rgba(192,57,43,.1);color:#e07060;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">em '+diff+' dias</span>';
+  else badge=' <span style="background:rgba(192,57,43,.1);color:#e07060;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">há '+Math.abs(diff)+' dia(s)</span>';
   el.innerHTML='<strong>'+fmtDate(dataAtivaPre)+'</strong> — '+weekday(dataAtivaPre)+badge;
 }
 
@@ -880,10 +937,10 @@ function renderPre(){
       const regIdx2 = REGS.indexOf(reg);
       const caseStyle='background:none;border:none;cursor:pointer;font-size:11px;padding:1px 3px;line-height:1;font-weight:bold;border-radius:3px;transition:all 0.15s;';
       const upCase = i>0
-        ? '<button onclick="moverCasoPre('+regIdx2+','+gi+',-1)" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#c0392b&quot;;this.style.background=&quot;#fdf0ee&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▲</button>'
+        ? '<button onclick="moverCasoPre('+regIdx2+','+gi+',-1)" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#e07060&quot;;this.style.background=&quot;rgba(192,57,43,.1)&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▲</button>'
         : '<span style="width:18px;display:inline-block"></span>';
       const dnCase = i<items.length-1
-        ? '<button onclick="moverCasoPre('+regIdx2+','+gi+',1)" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#c0392b&quot;;this.style.background=&quot;#fdf0ee&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▼</button>'
+        ? '<button onclick="moverCasoPre('+regIdx2+','+gi+',1)" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#e07060&quot;;this.style.background=&quot;rgba(192,57,43,.1)&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▼</button>'
         : '<span style="width:18px;display:inline-block"></span>';
       return '<div class="item">'+
         '<div style="display:flex;flex-direction:column;line-height:1.3;flex-shrink:0;margin-right:2px">'+upCase+dnCase+'</div>'+
