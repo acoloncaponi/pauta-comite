@@ -379,6 +379,7 @@ function renderPauta(){
     const tA=totAlc(alc), cl=acls2(alc);
     const ordemAlc = getOrdemAlcada(alc);
     const isCustom = ordemCustom[alc] && ordemCustom[alc].length > 0;
+    const alcIdx = ALCS.indexOf(alc);
     const div=document.createElement('div'); div.className='alc-block';
     let inner='<div class="alc-head '+cl+'" style="justify-content:space-between">'+
       '<div style="display:flex;align-items:center;gap:10px">'+
@@ -389,7 +390,6 @@ function renderPauta(){
       (isCustom ? '<button onclick="resetOrdemAlcada('+alcIdx+')" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline">↺ restaurar padrão</button>' : '')+
     '</div>';
     let num=1; let temItem=false;
-    const alcIdx = ALCS.indexOf(alc);
     const regsComCasos = ordemAlc.filter(r => (pauta[r]||[]).filter(e=>e.alcada===alc).length > 0);
     ordemAlc.forEach(function(reg, regIdx){
       const items=(pauta[reg]||[]).filter(e=>e.alcada===alc);
