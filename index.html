@@ -419,13 +419,17 @@ function renderPauta(){
           '<button class="btn btn-dan btn-sm" onclick="doRem('+regIdx2+','+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
       }).join('');
       num+=items.length;
-      const dragHandle = totalComCasos > 1
-        ? '<span class="drag-handle" title="Arrastar para reordenar" style="cursor:grab;color:#bbb;font-size:16px;padding:0 6px 0 2px;user-select:none;flex-shrink:0" onmouseover="this.style.color=&quot;#b8973a&quot;" onmouseout="this.style.color=&quot;#bbb&quot;">⠿</span>'
-        : '<span style="width:24px;display:inline-block"></span>';
-      inner+='<div class="reg-sec" draggable="'+(totalComCasos>1?'true':'false')+'" data-reg="'+reg+'" data-alc="'+alc+'" ondragstart="onDragStart(event)" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragend="onDragEnd(event)">'+
+      const rBtnSt = 'background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;font-weight:bold;border-radius:4px;';
+      const upBtn = (totalComCasos > 1 && posInCasos > 0)
+        ? '<button onclick="moverRegional('+alcIdx+','+posInCasos+',-1)" title="Mover para cima" style="'+rBtnSt+'color:#555" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#555&quot;;this.style.background=&quot;none&quot;">▲</button>'
+        : '<span style="width:26px;display:inline-block"></span>';
+      const dnBtn = (totalComCasos > 1 && posInCasos < totalComCasos - 1)
+        ? '<button onclick="moverRegional('+alcIdx+','+posInCasos+',1)" title="Mover para baixo" style="'+rBtnSt+'color:#555" onmouseover="this.style.color=&quot;#b8973a&quot;;this.style.background=&quot;#fdf8e8&quot;" onmouseout="this.style.color=&quot;#555&quot;;this.style.background=&quot;none&quot;">▼</button>'
+        : '<span style="width:26px;display:inline-block"></span>';
+      inner+='<div class="reg-sec">'+
         '<div class="reg-head">'+
         '<div class="reg-head-l">'+
-          dragHandle+
+          '<div style="display:flex;flex-direction:column;line-height:1.2;flex-shrink:0">'+upBtn+dnBtn+'</div>'+
           '<span class="reg-name" onclick="togSec(\''+bid+'\',\''+cid+'\')" style="cursor:pointer">'+reg+'</span>'+
           '<span class="reg-ct">'+items.length+' '+(items.length===1?'caso':'casos')+'</span>'+
         '</div>'+
@@ -467,16 +471,26 @@ function getOrdemAlcada(alc) {
   return getRegsOrdem(dataAtiva);
 }
 
-function moverRegional(alcIdx, fromIdx, dir) {
+function moverRegional(alcIdx, posVisual, dir) {
+  // posVisual = index among regions that HAVE cases in this alcada
   const alc = ALCS[alcIdx];
   if(!alc) return;
   if(!ordemCustom[alc] || !Array.isArray(ordemCustom[alc])) {
     ordemCustom[alc] = getRegsOrdem(dataAtiva).slice();
   }
   const ordem = ordemCustom[alc];
-  const toIdx = fromIdx + dir;
-  if(toIdx < 0 || toIdx >= ordem.length) return;
-  const tmp = ordem[fromIdx]; ordem[fromIdx] = ordem[toIdx]; ordem[toIdx] = tmp;
+  // Get only the visible regions (with cases) in current order
+  const visiveis = ordem.filter(r => (pauta[r]||[]).filter(e=>e.alcada===alc).length > 0);
+  const novaPosVisual = posVisual + dir;
+  if(novaPosVisual < 0 || novaPosVisual >= visiveis.length) return;
+  // Find real indices in ordem array
+  const regA = visiveis[posVisual];
+  const regB = visiveis[novaPosVisual];
+  const idxA = ordem.indexOf(regA);
+  const idxB = ordem.indexOf(regB);
+  if(idxA === -1 || idxB === -1) return;
+  // Swap in full array
+  const tmp = ordem[idxA]; ordem[idxA] = ordem[idxB]; ordem[idxB] = tmp;
   _saving = true;
   render();
   DB.ref('pautas/'+dataAtiva+'/ordemCustom').set(ordemCustom)
