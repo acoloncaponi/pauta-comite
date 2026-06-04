@@ -204,7 +204,7 @@ firebase.initializeApp({
 const DB = firebase.database();
 
 // ── CONSTANTES ──
-const REGS_BASE = ["Corporate","São Paulo Capital","São Paulo ABC","São Paulo Interior","Centro-Oeste","Nordeste","RJ - MG - ES","Sul"];
+const REGS_BASE = ["Corporate","SP 1","SP 2","São Paulo Interior","Centro-Oeste","Nordeste","RJ - MG - ES","Sul"];
 
 // Rotação semanal: semana de referência = 02/06/2026, Corporate na frente
 // A cada semana, a primeira regional vai para o final
@@ -376,7 +376,7 @@ function renderPauta(){
         '<span class="alc-ct">'+tA+' '+(tA===1?'caso':'casos')+'</span>'+
         (isCustom ? '<span style="font-size:11px;background:#fdf8e8;color:#b8973a;border:1px solid #e8d89a;padding:1px 7px;border-radius:20px;font-weight:500">ordem customizada</span>' : '')+
       '</div>'+
-      (isCustom ? '<button onclick="resetOrdemAlcada(\'' + alcSafe + '\')" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:3px;text-decoration:underline">↺ restaurar padrão</button>' : '')+
+      (isCustom ? '<button onclick="resetOrdemAlcada('+alcIdx+')" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;font-family:inherit;text-decoration:underline">↺ restaurar padrão</button>' : '')+
     '</div>';
     let num=1; let temItem=false;
     ordemAlc.forEach(function(reg, regIdx){
@@ -386,21 +386,21 @@ function renderPauta(){
       const cid='c'+alc.replace(/\s/g,'')+'_'+reg.replace(/[\s\/]+/g,'_');
       let rows=items.map((e,i)=>{
         const gi=(pauta[reg]||[]).indexOf(e);
-        const regSafe = reg.replace(/[\\'"]/g,'_');
-        const upCase = i>0 ? '<button onclick="moverCaso(\''+reg.replace(/'/g,"\\'")+'\',' + gi + ',-1)" title="Mover para cima" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:11px;padding:1px 2px;line-height:1" onmouseover="this.style.color=\'#b8973a\'" onmouseout="this.style.color=\'#ddd\'">▲</button>' : '<span style="width:16px;display:inline-block"></span>';
-        const dnCase = i<items.length-1 ? '<button onclick="moverCaso(\''+reg.replace(/'/g,"\\'")+'\',' + gi + ',1)" title="Mover para baixo" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:11px;padding:1px 2px;line-height:1" onmouseover="this.style.color=\'#b8973a\'" onmouseout="this.style.color=\'#ddd\'">▼</button>' : '<span style="width:16px;display:inline-block"></span>';
+        const regIdx2 = REGS.indexOf(reg);
+        const upCase = i>0 ? '<button onclick="moverCaso('+regIdx2+','+gi+',-1)" title="Mover para cima" style="background:none;border:none;cursor:pointer;color:#888;font-size:11px;padding:1px 2px;line-height:1;font-weight:bold">▲</button>' : '<span style="width:16px;display:inline-block"></span>';
+        const dnCase = i<items.length-1 ? '<button onclick="moverCaso('+regIdx2+','+gi+',1)" title="Mover para baixo" style="background:none;border:none;cursor:pointer;color:#888;font-size:11px;padding:1px 2px;line-height:1;font-weight:bold">▼</button>' : '<span style="width:16px;display:inline-block"></span>';
         return '<div class="item">'+
           '<div style="display:flex;flex-direction:column;line-height:1.3;flex-shrink:0;margin-right:2px">'+upCase+dnCase+'</div>'+
           '<span class="item-num">'+(num+i)+'.</span>'+
           '<div class="item-info"><div class="item-name">'+esc(e.empresa)+'</div>'+
           '<div class="item-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>'+esc(e.analista)+'</div></div>'+
           '<span class="badge '+acls(alc)+'">'+esc(alc)+'</span>'+
-          '<button class="btn btn-dan btn-sm" onclick="doRem(\''+reg.replace(/'/g,"\\'")+'\''+','+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
+          '<button class="btn btn-dan btn-sm" onclick="doRem('+regIdx2+','+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
       }).join('');
       num+=items.length;
-      const alcSafe = alc.replace(/['"]/g,'');
-      const upBtn = regIdx>0 ? '<button onclick="moverRegional(\''+alcSafe+'\','+regIdx+',-1)" title="Mover para cima" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;padding:1px 3px" onmouseover="this.style.color=\'#b8973a\'" onmouseout="this.style.color=\'#ccc\'">▲</button>' : '<span style="width:20px;display:inline-block"></span>';
-      const dnBtn = regIdx<ordemAlc.length-1 ? '<button onclick="moverRegional(\''+alcSafe+'\','+regIdx+',1)" title="Mover para baixo" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;padding:1px 3px" onmouseover="this.style.color=\'#b8973a\'" onmouseout="this.style.color=\'#ccc\'">▼</button>' : '<span style="width:20px;display:inline-block"></span>';
+      const alcIdx = ALCS.indexOf(alc);
+      const upBtn = regIdx>0 ? '<button onclick="moverRegional('+alcIdx+','+regIdx+',-1)" title="Mover regional para cima" style="background:none;border:none;cursor:pointer;color:#888;font-size:13px;padding:1px 3px;line-height:1;font-weight:bold">▲</button>' : '<span style="width:20px;display:inline-block"></span>';
+      const dnBtn = regIdx<ordemAlc.length-1 ? '<button onclick="moverRegional('+alcIdx+','+regIdx+',1)" title="Mover regional para baixo" style="background:none;border:none;cursor:pointer;color:#888;font-size:13px;padding:1px 3px;line-height:1;font-weight:bold">▼</button>' : '<span style="width:20px;display:inline-block"></span>';
       inner+='<div class="reg-sec">'+
         '<div class="reg-head">'+
         '<div class="reg-head-l">'+
@@ -446,9 +446,9 @@ function getOrdemAlcada(alc) {
   return getRegsOrdem(dataAtiva);
 }
 
-function moverRegional(alcSafe, fromIdx, dir) {
-  // Find alc by stripping special chars
-  const alc = ALCS.find(a => a.replace(/['"]/g,'') === alcSafe) || alcSafe;
+function moverRegional(alcIdx, fromIdx, dir) {
+  const alc = ALCS[alcIdx];
+  if(!alc) return;
   // Inicializa ordem customizada desta alçada se não existir
   if(!ordemCustom[alc] || !Array.isArray(ordemCustom[alc])) {
     ordemCustom[alc] = getRegsOrdem(dataAtiva).slice();
@@ -462,8 +462,9 @@ function moverRegional(alcSafe, fromIdx, dir) {
   render();
 }
 
-function resetOrdemAlcada(alcSafe) {
-  const alc = ALCS.find(a => a.replace(/['"]/g,'') === alcSafe) || alcSafe;
+function resetOrdemAlcada(alcIdx) {
+  const alc = ALCS[alcIdx];
+  if(!alc) return;
   delete ordemCustom[alc];
   fbSave();
   render();
@@ -477,6 +478,18 @@ function doApagarRetirado(idx){
   render();
   fbSave();
   toast(nome+' apagado permanentemente');
+}
+
+function moverCaso(regIdx, gi, dir) {
+  const reg = REGS[regIdx];
+  if(!reg) return;
+  const arr = pauta[reg];
+  if(!arr) return;
+  const to = gi + dir;
+  if(to < 0 || to >= arr.length) return;
+  const tmp = arr[gi]; arr[gi] = arr[to]; arr[to] = tmp;
+  render();
+  fbSave();
 }
 
 function togSec(bid,cid){ $(bid).classList.toggle('hide'); $(cid).classList.toggle('rot'); }
@@ -505,7 +518,9 @@ function doAdd(){
   toast('✓ '+emp+' adicionada');
 }
 
-function doRem(reg,idx){
+function doRem(regIdx,idx){
+  const reg = REGS[regIdx];
+  if(!reg || !pauta[reg] || !pauta[reg][idx]) return;
   const item = pauta[reg][idx];
   retirados.push({ empresa: item.empresa, analista: item.analista, alcada: item.alcada, regional: reg, ts: Date.now() });
   pauta[reg].splice(idx,1);
