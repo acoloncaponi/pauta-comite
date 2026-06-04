@@ -577,11 +577,10 @@ function doRepautar(idx){
 function buildText(){
   const dl=dataAtiva?fmtDate(dataAtiva)+' — '+weekday(dataAtiva):new Date().toLocaleDateString('pt-BR');
   let L=['*PAUTA DO COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+total()+' caso(s)'];
-  const ordemRegs = getRegsOrdem(dataAtiva);
   ALCS.forEach(alc=>{
     const tA=totAlc(alc); if(!tA)return;
     L.push('','*Comitê '+alc+'*'); let n=1;
-    ordemRegs.forEach(reg=>{
+    getOrdemAlcada(alc).forEach(reg=>{
       const it=(pauta[reg]||[]).filter(e=>e.alcada===alc); if(!it.length)return;
       L.push('','_'+reg+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;});
     });
@@ -667,10 +666,13 @@ function expH(hi){
   const h=hist[hi];
   const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
   let L=['*PAUTA DO COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+h.total+' caso(s)'];
-  const ordemH = getRegsOrdem(h.dataComite||null);
   ALCS.forEach(alc=>{
-    const tA=ordemH.reduce((s,r)=>s+(h.regionais[r]||[]).filter(e=>e.alcada===alc).length,0); if(!tA)return;
+    const tA=REGS.reduce((s,r)=>s+(h.regionais[r]||[]).filter(e=>e.alcada===alc).length,0); if(!tA)return;
     L.push('','*Comitê '+alc+'*'); let n=1;
+    // Use stored custom order if available, else weekly rotation for that date
+    const ordemH = (h.ordemCustom && h.ordemCustom[alc] && h.ordemCustom[alc].length)
+      ? h.ordemCustom[alc]
+      : getRegsOrdem(h.dataComite||null);
     ordemH.forEach(r=>{
       const it=(h.regionais[r]||[]).filter(e=>e.alcada===alc); if(!it.length)return;
       L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;});
@@ -689,10 +691,13 @@ function copyH(hi){
   const h=hist[hi];
   const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
   let L=['*PAUTA DO COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+h.total+' caso(s)'];
-  const ordemH = getRegsOrdem(h.dataComite||null);
   ALCS.forEach(alc=>{
-    const tA=ordemH.reduce((s,r)=>s+(h.regionais[r]||[]).filter(e=>e.alcada===alc).length,0); if(!tA)return;
+    const tA=REGS.reduce((s,r)=>s+(h.regionais[r]||[]).filter(e=>e.alcada===alc).length,0); if(!tA)return;
     L.push('','*Comitê '+alc+'*'); let n=1;
+    // Use stored custom order if available, else weekly rotation for that date
+    const ordemH = (h.ordemCustom && h.ordemCustom[alc] && h.ordemCustom[alc].length)
+      ? h.ordemCustom[alc]
+      : getRegsOrdem(h.dataComite||null);
     ordemH.forEach(r=>{
       const it=(h.regionais[r]||[]).filter(e=>e.alcada===alc); if(!it.length)return;
       L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;});
