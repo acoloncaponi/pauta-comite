@@ -390,6 +390,26 @@ function renderPauta(){
     if(!temItem) inner+='<div class="empty">Nenhum caso nesta alçada</div>';
     div.innerHTML=inner; wrap.appendChild(div);
   });
+
+  // Bloco Casos Retirados
+  if(retirados.length > 0){
+    const retDiv = document.createElement('div');
+    retDiv.className = 'retirados-block';
+    let retHTML = '<div class="retirados-head"><span class="ret-name"><i class="ti ti-archive" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i>Casos Retirados</span><span class="ret-ct">'+retirados.length+' '+(retirados.length===1?'caso':'casos')+'</span></div>';
+    retHTML += '<div style="display:flex;flex-direction:column;gap:5px">';
+    retirados.forEach(function(e,i){
+      retHTML += '<div class="item item-ret">'+
+        '<div class="item-info">'+
+          '<div class="item-name">'+esc(e.empresa)+'</div>'+
+          '<div class="item-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>'+esc(e.analista)+' · '+esc(e.regional)+' · '+esc(e.alcada)+'</div>'+
+        '</div>'+
+        '<button class="btn btn-warn btn-sm" onclick="doRepautar('+i+')"><i class="ti ti-arrow-back-up"></i>Repautar</button>'+
+      '</div>';
+    });
+    retHTML += '</div>';
+    retDiv.innerHTML = retHTML;
+    wrap.appendChild(retDiv);
+  }
 }
 
 function render(){ renderStats(); renderPauta(); }
