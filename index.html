@@ -157,14 +157,14 @@ main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
     <div class="topbar-l">
       <div class="topbar-logo"><i class="ti ti-clipboard-list"></i></div>
       <div class="topbar-divider"></div>
-      <h1>Pauta do Comitê de Crédito</h1>
+      <h1 id="topbar-title">Pauta Comitês</h1>
       <div class="sync" id="sync-el"><i class="ti ti-cloud-check" style="font-size:14px"></i>sincronizado</div>
     </div>
     <div class="topbar-r">
       <div class="live"><span class="live-dot"></span>ao vivo</div>
-      <button class="btn" id="btn-copy" onclick="doCopy()"><i class="ti ti-clipboard"></i>Copiar</button>
-      <button class="btn btn-suc" onclick="doExport()"><i class="ti ti-brand-whatsapp"></i>Exportar</button>
-      <button class="btn btn-pri" onclick="doClose()"><i class="ti ti-device-floppy"></i>Fechar pauta</button>
+      <button class="btn" id="btn-copy" onclick="ctxCopy()"><i class="ti ti-clipboard"></i>Copiar</button>
+      <button class="btn btn-suc" id="btn-export" onclick="ctxExport()"><i class="ti ti-brand-whatsapp"></i>Exportar</button>
+      <button class="btn btn-pri" id="btn-close" onclick="ctxClose()"><i class="ti ti-device-floppy"></i>Fechar pauta</button>
       <button class="btn btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i></button>
     </div>
   </div>
@@ -214,11 +214,7 @@ main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
         <button class="btn btn-red" onclick="doAddPre()"><i class="ti ti-plus"></i>Adicionar ao Pré Comitê</button>
       </div>
       <div id="pauta-pre-el"></div>
-      <div style="display:flex;gap:8px;margin-top:1.5rem;flex-wrap:wrap">
-        <button class="btn btn-red-outline" onclick="doCopyPre()"><i class="ti ti-clipboard"></i>Copiar</button>
-        <button class="btn btn-red-outline" onclick="doExportPre()"><i class="ti ti-brand-whatsapp"></i>Exportar</button>
-        <button class="btn btn-red" onclick="doClosePre()"><i class="ti ti-device-floppy"></i>Fechar Pré Comitê</button>
-      </div>
+
     </div>
     <div id="tab-prehist" style="display:none"><div id="prehist-el"></div></div>
   </main>
@@ -564,7 +560,10 @@ function moverCaso(regIdx, gi, dir) {
 function togSec(bid,cid){ $(bid).classList.toggle('hide'); $(cid).classList.toggle('rot'); }
 
 // ── TABS ──
+let _currentTab = 'pauta';
+
 function goTab(t,el){
+  _currentTab = t;
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); el.classList.add('on');
   $('tab-pauta').style.display=t==='pauta'?'':'none';
   $('tab-hist').style.display=t==='hist'?'':'none';
@@ -572,7 +571,27 @@ function goTab(t,el){
   $('tab-prehist').style.display=t==='prehist'?'':'none';
   if(t==='hist') renderHist();
   if(t==='prehist') renderPreHist();
+  // Update topbar based on tab
+  const isPre = t==='pre'||t==='prehist';
+  $('topbar-title').textContent = isPre ? 'Pré Comitê de Crédito' : 'Pauta Comitês';
+  $('btn-copy').style.display = (t==='hist'||t==='prehist') ? 'none' : '';
+  $('btn-export').style.display = (t==='hist'||t==='prehist') ? 'none' : '';
+  $('btn-close').style.display = (t==='hist'||t==='prehist') ? 'none' : '';
+  if(isPre){
+    $('btn-close').className='btn btn-red';
+    $('btn-close').innerHTML='<i class="ti ti-device-floppy"></i>Fechar Pré Comitê';
+    $('btn-export').className='btn btn-suc';
+  } else {
+    $('btn-close').className='btn btn-pri';
+    $('btn-close').innerHTML='<i class="ti ti-device-floppy"></i>Fechar pauta';
+    $('btn-export').className='btn btn-suc';
+  }
 }
+
+// Context-aware topbar actions
+function ctxCopy(){ if(_currentTab==='pre') doCopyPre(); else doCopy(); }
+function ctxExport(){ if(_currentTab==='pre') doExportPre(); else doExport(); }
+function ctxClose(){ if(_currentTab==='pre') doClosePre(); else doClose(); }
 
 // ── ADICIONAR / REMOVER ──
 function doAdd(){
