@@ -135,9 +135,9 @@ main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
   <div class="login-box">
     <div class="login-icon"><i class="ti ti-clipboard-list"></i></div>
     <h1>Pauta do Comitê</h1>
-    <p>Crédito Atacado · Corporate</p>
+    <p>Insira suas credenciais de acesso</p>
     <div id="login-err">Usuário ou senha incorretos.</div>
-    <div class="field"><label>Usuário</label><input type="text" id="f-user" placeholder="admin" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="field"><label>Usuário</label><input type="text" id="f-user" placeholder="Seu usuário de acesso" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <div class="field"><label>Senha</label><input type="password" id="f-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="btn-entrar" onclick="doLogin()">Entrar</button>
   </div>
@@ -404,6 +404,7 @@ function renderPauta(){
           '<div class="item-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>'+esc(e.analista)+' · '+esc(e.regional)+' · '+esc(e.alcada)+'</div>'+
         '</div>'+
         '<button class="btn btn-warn btn-sm" onclick="doRepautar('+i+')"><i class="ti ti-arrow-back-up"></i>Repautar</button>'+
+        '<button class="btn btn-dan btn-sm" onclick="doApagarRetirado('+i+')"><i class="ti ti-trash"></i>Apagar</button>'+
       '</div>';
     });
     retHTML += '</div>';
@@ -413,6 +414,14 @@ function renderPauta(){
 }
 
 function render(){ renderStats(); renderPauta(); }
+function doApagarRetirado(idx){
+  const nome = retirados[idx].empresa;
+  retirados.splice(idx,1);
+  render();
+  fbSave();
+  toast(nome+' apagado permanentemente');
+}
+
 function togSec(bid,cid){ $(bid).classList.toggle('hide'); $(cid).classList.toggle('rot'); }
 
 // ── TABS ──
@@ -498,6 +507,7 @@ function doCopy(){
 // ── FECHAR PAUTA ──
 function doClose(){
   const tot=total(); if(tot===0){toast('⚠ A pauta está vazia');return;}
+  if(!confirm('Tem certeza que deseja encerrar a pauta?\nAlterações não serão mais permitidas.')){return;}
   const now=new Date();
   if(!Array.isArray(hist))hist=[];
   hist.unshift({id:Date.now(),dataComite:dataAtiva,dataCriacao:now.toLocaleDateString('pt-BR'),hora:now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),total:tot,regionais:JSON.parse(JSON.stringify(pauta)),retirados:JSON.parse(JSON.stringify(retirados))});
