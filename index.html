@@ -376,7 +376,7 @@ function renderPauta(){
         '<span class="alc-ct">'+tA+' '+(tA===1?'caso':'casos')+'</span>'+
         (isCustom ? '<span style="font-size:11px;background:#fdf8e8;color:#b8973a;border:1px solid #e8d89a;padding:1px 7px;border-radius:20px;font-weight:500">ordem customizada</span>' : '')+
       '</div>'+
-      (isCustom ? '<button onclick="resetOrdemAlcada(''+alc+'')" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">↺ restaurar padrão</button>' : '')+
+      (isCustom ? '<button onclick="resetOrdemAlcada(\'' + alcSafe + '\')" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:3px;text-decoration:underline">↺ restaurar padrão</button>' : '')+
     '</div>';
     let num=1; let temItem=false;
     ordemAlc.forEach(function(reg, regIdx){
@@ -386,12 +386,16 @@ function renderPauta(){
       const cid='c'+alc.replace(/\s/g,'')+'_'+reg.replace(/[\s\/]+/g,'_');
       let rows=items.map((e,i)=>{
         const gi=(pauta[reg]||[]).indexOf(e);
+        const regSafe = reg.replace(/[\\'"]/g,'_');
+        const upCase = i>0 ? '<button onclick="moverCaso(\''+reg.replace(/'/g,"\\'")+'\',' + gi + ',-1)" title="Mover para cima" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:11px;padding:1px 2px;line-height:1" onmouseover="this.style.color=\'#b8973a\'" onmouseout="this.style.color=\'#ddd\'">▲</button>' : '<span style="width:16px;display:inline-block"></span>';
+        const dnCase = i<items.length-1 ? '<button onclick="moverCaso(\''+reg.replace(/'/g,"\\'")+'\',' + gi + ',1)" title="Mover para baixo" style="background:none;border:none;cursor:pointer;color:#ddd;font-size:11px;padding:1px 2px;line-height:1" onmouseover="this.style.color=\'#b8973a\'" onmouseout="this.style.color=\'#ddd\'">▼</button>' : '<span style="width:16px;display:inline-block"></span>';
         return '<div class="item">'+
+          '<div style="display:flex;flex-direction:column;line-height:1.3;flex-shrink:0;margin-right:2px">'+upCase+dnCase+'</div>'+
           '<span class="item-num">'+(num+i)+'.</span>'+
           '<div class="item-info"><div class="item-name">'+esc(e.empresa)+'</div>'+
           '<div class="item-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>'+esc(e.analista)+'</div></div>'+
           '<span class="badge '+acls(alc)+'">'+esc(alc)+'</span>'+
-          '<button class="btn btn-dan btn-sm" onclick="doRem(\''+reg.replace(/'/g,"\\'")+"',"+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
+          '<button class="btn btn-dan btn-sm" onclick="doRem(\''+reg.replace(/'/g,"\\'")+'\''+','+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
       }).join('');
       num+=items.length;
       const alcSafe = alc.replace(/['"]/g,'');
