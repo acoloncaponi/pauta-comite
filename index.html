@@ -228,6 +228,7 @@ const ALCS = ["Alçada 3","Alçada 2","Alçada 1"];
 // ── ESTADO ──
 let pauta = {};
 let retirados = [];
+let ordemCustom = {}; // { 'Alçada 3': [...regs], 'Alçada 2': [...regs], 'Alçada 1': [...regs] }
 let hist = [];
 let dataAtiva = '';
 let dbListener = null;
@@ -280,6 +281,7 @@ function fbSave(){
   DB.ref('pautas/'+dataAtiva).set({
     regionais: pauta,
     retirados: retirados.length ? retirados : null,
+    ordemCustom: Object.keys(ordemCustom).length ? ordemCustom : null,
     dataComite: dataAtiva,
     ts: Date.now()
   })
@@ -293,6 +295,7 @@ function fbListen(key){
   // Limpa pauta local antes de carregar nova data
   REGS.forEach(r=>pauta[r]=[]);
   retirados = [];
+  ordemCustom = {};
   render();
   if(!key){ return; }
 
@@ -307,6 +310,7 @@ function fbListen(key){
         REGS.forEach(r=>{ pauta[r]=[]; });
       }
       retirados = (d && Array.isArray(d.retirados)) ? d.retirados : [];
+      ordemCustom = (d && d.ordemCustom && typeof d.ordemCustom === 'object') ? d.ordemCustom : {};
       sync('sincronizado','ti-cloud-check');
       render();
     },
@@ -354,19 +358,28 @@ function renderStats(){
 function renderPauta(){
   const wrap=$('pauta-el'); if(!wrap)return;
   wrap.innerHTML='';
-  const ordemRegs = getRegsOrdem(dataAtiva);
+  const ordemSemana = getRegsOrdem(dataAtiva);
   // Banner de ordem semanal
   const banner = document.createElement('div');
-  banner.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 14px;background:#161616;border:1px solid #1e1e1e;border-radius:8px;margin-bottom:1.25rem;flex-wrap:wrap';
-  banner.innerHTML='<span style="font-size:11px;color:#555;font-weight:500;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Ordem desta semana:</span>'+
-    ordemRegs.map((r,i)=>'<span style="font-size:12px;color:'+(i===0?'#FFBD4C':'#444')+'">'+r+(i<ordemRegs.length-1?' <span style="color:#2a2a2a">›</span>':'')+' </span>').join('');
+  banner.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 14px;background:#f0ede6;border:1px solid #e0ddd6;border-radius:8px;margin-bottom:1.25rem;flex-wrap:wrap';
+  banner.innerHTML='<span style="font-size:11px;color:#aaa;font-weight:500;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Ordem desta semana:</span>'+
+    ordemSemana.map((r,i)=>'<span style="font-size:12px;color:'+(i===0?'#b8973a':'#bbb')+'">'+r+(i<ordemSemana.length-1?' <span style="color:#ddd">›</span>':'')+' </span>').join('');
   wrap.appendChild(banner);
   ALCS.forEach(alc=>{
     const tA=totAlc(alc), cl=acls2(alc);
+    const ordemAlc = getOrdemAlcada(alc);
+    const isCustom = ordemCustom[alc] && ordemCustom[alc].length > 0;
     const div=document.createElement('div'); div.className='alc-block';
-    let inner='<div class="alc-head '+cl+'"><span class="alc-name">Comitê '+alc+'</span><span class="alc-ct">'+tA+' '+(tA===1?'caso':'casos')+'</span></div>';
+    let inner='<div class="alc-head '+cl+'" style="justify-content:space-between">'+
+      '<div style="display:flex;align-items:center;gap:10px">'+
+        '<span class="alc-name">Comitê '+alc+'</span>'+
+        '<span class="alc-ct">'+tA+' '+(tA===1?'caso':'casos')+'</span>'+
+        (isCustom ? '<span style="font-size:11px;background:#fdf8e8;color:#b8973a;border:1px solid #e8d89a;padding:1px 7px;border-radius:20px;font-weight:500">ordem customizada</span>' : '')+
+      '</div>'+
+      (isCustom ? '<button onclick="resetOrdemAlcada(''+alc+'')" style="font-size:11px;color:#aaa;background:none;border:none;cursor:pointer;text-decoration:underline;font-family:inherit">↺ restaurar padrão</button>' : '')+
+    '</div>';
     let num=1; let temItem=false;
-    ordemRegs.forEach(reg=>{
+    ordemAlc.forEach(function(reg, regIdx){
       const items=(pauta[reg]||[]).filter(e=>e.alcada===alc);
       if(!items.length)return; temItem=true;
       const bid='b'+alc.replace(/\s/g,'')+'_'+reg.replace(/[\s\/]+/g,'_');
@@ -381,10 +394,17 @@ function renderPauta(){
           '<button class="btn btn-dan btn-sm" onclick="doRem(\''+reg.replace(/'/g,"\\'")+"',"+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
       }).join('');
       num+=items.length;
+      const alcSafe = alc.replace(/['"]/g,'');
+      const upBtn = regIdx>0 ? '<button onclick="moverRegional(\''+alcSafe+'\','+regIdx+',-1)" title="Mover para cima" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;padding:1px 3px" onmouseover="this.style.color=\'#b8973a\'" onmouseout="this.style.color=\'#ccc\'">▲</button>' : '<span style="width:20px;display:inline-block"></span>';
+      const dnBtn = regIdx<ordemAlc.length-1 ? '<button onclick="moverRegional(\''+alcSafe+'\','+regIdx+',1)" title="Mover para baixo" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;padding:1px 3px" onmouseover="this.style.color=\'#b8973a\'" onmouseout="this.style.color=\'#ccc\'">▼</button>' : '<span style="width:20px;display:inline-block"></span>';
       inner+='<div class="reg-sec">'+
-        '<div class="reg-head" onclick="togSec(\''+bid+'\',\''+cid+'\')">'+
-        '<div class="reg-head-l"><span class="reg-name">'+reg+'</span><span class="reg-ct">'+items.length+' '+(items.length===1?'caso':'casos')+'</span></div>'+
-        '<i class="ti ti-chevron-down chevron" id="'+cid+'"></i></div>'+
+        '<div class="reg-head">'+
+        '<div class="reg-head-l">'+
+          '<div style="display:flex;flex-direction:column;line-height:1.2;margin-right:2px">'+upBtn+dnBtn+'</div>'+
+          '<span class="reg-name" onclick="togSec(\''+bid+'\',\''+cid+'\')" style="cursor:pointer">'+reg+'</span>'+
+          '<span class="reg-ct">'+items.length+' '+(items.length===1?'caso':'casos')+'</span>'+
+        '</div>'+
+        '<i class="ti ti-chevron-down chevron" id="'+cid+'" onclick="togSec(\''+bid+'\',\''+cid+'\')" style="cursor:pointer"></i></div>'+
         '<div class="items" id="'+bid+'">'+rows+'</div></div>';
     });
     if(!temItem) inner+='<div class="empty">Nenhum caso nesta alçada</div>';
@@ -411,6 +431,39 @@ function renderPauta(){
     retDiv.innerHTML = retHTML;
     wrap.appendChild(retDiv);
   }
+}
+
+function getOrdemAlcada(alc) {
+  // Se há ordem customizada para esta alçada no dia, usa ela
+  if(ordemCustom[alc] && Array.isArray(ordemCustom[alc]) && ordemCustom[alc].length > 0) {
+    return ordemCustom[alc];
+  }
+  // Senão usa a ordem semanal padrão
+  return getRegsOrdem(dataAtiva);
+}
+
+function moverRegional(alcSafe, fromIdx, dir) {
+  // Find alc by stripping special chars
+  const alc = ALCS.find(a => a.replace(/['"]/g,'') === alcSafe) || alcSafe;
+  // Inicializa ordem customizada desta alçada se não existir
+  if(!ordemCustom[alc] || !Array.isArray(ordemCustom[alc])) {
+    ordemCustom[alc] = getRegsOrdem(dataAtiva).slice();
+  }
+  const ordem = ordemCustom[alc];
+  const toIdx = fromIdx + dir;
+  if(toIdx < 0 || toIdx >= ordem.length) return;
+  // Swap
+  const tmp = ordem[fromIdx]; ordem[fromIdx] = ordem[toIdx]; ordem[toIdx] = tmp;
+  fbSave();
+  render();
+}
+
+function resetOrdemAlcada(alcSafe) {
+  const alc = ALCS.find(a => a.replace(/['"]/g,'') === alcSafe) || alcSafe;
+  delete ordemCustom[alc];
+  fbSave();
+  render();
+  toast('Ordem restaurada para o padrão semanal');
 }
 
 function render(){ renderStats(); renderPauta(); }
@@ -516,6 +569,7 @@ function doClose(){
   localStorage.removeItem('lastDate');
   REGS.forEach(r=>pauta[r]=[]);
   retirados=[];
+  ordemCustom={};
   dataAtiva=''; $('inp-date').value=''; updateDateLabel(); render();
   toast('✓ Pauta fechada ('+tot+' casos)');
 }
