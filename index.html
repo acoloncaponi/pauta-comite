@@ -56,6 +56,14 @@ main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
 .tab{padding:9px 18px;font-size:13px;cursor:pointer;color:#aaa;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:all .15s}
 .tab:hover{color:#555}
 .tab.on{color:#1a1a18;font-weight:500;border-bottom-color:#b8973a}
+.tab-green:hover{color:#2d7a3a}
+.tab-green.on{color:#2d7a3a;border-bottom-color:#2d7a3a}
+.tab-red:hover{color:#c0392b}
+.tab-red.on{color:#c0392b;border-bottom-color:#c0392b}
+.btn-red{background:#c0392b;color:#fff;border-color:#c0392b;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;border-width:1px;border-style:solid}
+.btn-red:hover{opacity:.88}
+.btn-red-outline{background:#fff;color:#c0392b;border:1px solid #f0b8b0;display:inline-flex;align-items:center;gap:6px;padding:7px 13px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer}
+.btn-red-outline:hover{background:#fff5f5}
 .date-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid #e8e6e0;border-radius:12px;padding:12px 16px;margin-bottom:1.25rem}
 .date-bar label{font-size:13px;color:#888;white-space:nowrap}
 .date-bar input[type=date]{padding:6px 10px;border:1px solid #e0ddd6;border-radius:8px;font-size:14px;font-weight:500;background:#faf9f7;color:#1a1a18;font-family:inherit;cursor:pointer}
@@ -162,8 +170,10 @@ main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
   </div>
   <main>
     <div class="tabs">
-      <button class="tab on" onclick="goTab('pauta',this)"><i class="ti ti-list" style="margin-right:5px;font-size:14px"></i>Pauta atual</button>
-      <button class="tab" onclick="goTab('hist',this)"><i class="ti ti-history" style="margin-right:5px;font-size:14px"></i>Histórico</button>
+      <button class="tab on tab-green" onclick="goTab('pauta',this)"><i class="ti ti-list" style="margin-right:5px;font-size:14px"></i>Pauta Comitês</button>
+      <button class="tab tab-green" onclick="goTab('hist',this)"><i class="ti ti-history" style="margin-right:5px;font-size:14px"></i>Histórico Pauta Comitês</button>
+      <button class="tab tab-red" onclick="goTab('pre',this)"><i class="ti ti-clipboard-check" style="margin-right:5px;font-size:14px"></i>Pré Comitê</button>
+      <button class="tab tab-red" onclick="goTab('prehist',this)"><i class="ti ti-history" style="margin-right:5px;font-size:14px"></i>Histórico Pré Comitês</button>
     </div>
     <div id="tab-pauta">
       <div class="date-bar">
@@ -186,6 +196,31 @@ main{max-width:900px;margin:0 auto;padding:1.5rem 1rem 4rem}
       <div id="pauta-el"></div>
     </div>
     <div id="tab-hist" style="display:none"><div id="hist-el"></div></div>
+    <div id="tab-pre" style="display:none">
+      <div class="date-bar">
+        <i class="ti ti-calendar-event" style="font-size:18px;color:#888"></i>
+        <label>Data do pré comitê:</label>
+        <input type="date" id="inp-date-pre" onchange="onDateChangePre()">
+        <div id="date-label-pre" style="color:#a0a09c;font-size:13px">Nenhuma data selecionada</div>
+      </div>
+      <div class="stats" id="stats-pre-el"></div>
+      <div class="form-box">
+        <h3><i class="ti ti-plus" style="font-size:14px;vertical-align:-1px;margin-right:4px"></i>Adicionar empresa ao Pré Comitê</h3>
+        <div class="form-grid">
+          <div class="fg"><label>Nome da empresa</label><input type="text" id="inp-emp-pre" placeholder="Ex: Empresa XYZ S.A." onkeydown="if(event.key==='Enter')doAddPre()"></div>
+          <div class="fg"><label>Analista responsável</label><input type="text" id="inp-ana-pre" placeholder="Nome do analista" onkeydown="if(event.key==='Enter')doAddPre()"></div>
+          <div class="fg"><label>Regional</label><select id="inp-reg-pre"></select></div>
+        </div>
+        <button class="btn btn-red" onclick="doAddPre()"><i class="ti ti-plus"></i>Adicionar ao Pré Comitê</button>
+      </div>
+      <div id="pauta-pre-el"></div>
+      <div style="display:flex;gap:8px;margin-top:1.5rem;flex-wrap:wrap">
+        <button class="btn btn-red-outline" onclick="doCopyPre()"><i class="ti ti-clipboard"></i>Copiar</button>
+        <button class="btn btn-red-outline" onclick="doExportPre()"><i class="ti ti-brand-whatsapp"></i>Exportar</button>
+        <button class="btn btn-red" onclick="doClosePre()"><i class="ti ti-device-floppy"></i>Fechar Pré Comitê</button>
+      </div>
+    </div>
+    <div id="tab-prehist" style="display:none"><div id="prehist-el"></div></div>
   </main>
 </div>
 
@@ -533,7 +568,10 @@ function goTab(t,el){
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on')); el.classList.add('on');
   $('tab-pauta').style.display=t==='pauta'?'':'none';
   $('tab-hist').style.display=t==='hist'?'':'none';
+  $('tab-pre').style.display=t==='pre'?'':'none';
+  $('tab-prehist').style.display=t==='prehist'?'':'none';
   if(t==='hist') renderHist();
+  if(t==='prehist') renderPreHist();
 }
 
 // ── ADICIONAR / REMOVER ──
@@ -719,11 +757,319 @@ function delH(i){
   renderHist(); toast('Removido do histórico');
 }
 
+// ══════════════════════════════════════════════
+// PRÉ COMITÊ
+// ══════════════════════════════════════════════
+let pautaPre = {};
+let retiradosPre = [];
+let histPre = [];
+let dataAtivaPre = '';
+let dbListenerPre = null;
+
+REGS.forEach(r => pautaPre[r] = []);
+
+function totalPre(){ return REGS.reduce((s,r)=>s+(pautaPre[r]||[]).length,0); }
+
+// Firebase Pre
+function fbSavePre(){
+  if(!dataAtivaPre){ toast('⚠ Selecione a data primeiro'); return; }
+  _saving = true;
+  sync('salvando...','ti-cloud-upload');
+  return DB.ref('pre/'+dataAtivaPre).set({
+    regionais: pautaPre,
+    retirados: retiradosPre.length ? retiradosPre : null,
+    dataComite: dataAtivaPre,
+    ts: Date.now()
+  }).then(()=>{ sync('sincronizado','ti-cloud-check'); setTimeout(()=>{ _saving=false; },500); })
+  .catch(e=>{ sync('erro','ti-cloud-x'); toast('Erro: '+e.message); _saving=false; });
+}
+
+function fbListenPre(key){
+  if(dbListenerPre){ dbListenerPre.ref.off('value', dbListenerPre.fn); dbListenerPre=null; }
+  REGS.forEach(r=>pautaPre[r]=[]);
+  retiradosPre=[];
+  renderPre();
+  if(!key) return;
+  const ref = DB.ref('pre/'+key);
+  const fn = ref.on('value', snap=>{
+    if(_saving) return;
+    const d = snap.val();
+    if(d && d.regionais){ REGS.forEach(r=>{ pautaPre[r]=Array.isArray(d.regionais[r])?d.regionais[r]:[]; }); }
+    else { REGS.forEach(r=>{ pautaPre[r]=[]; }); }
+    retiradosPre = (d && Array.isArray(d.retirados)) ? d.retirados : [];
+    sync('sincronizado','ti-cloud-check');
+    renderPre();
+  }, err=>{ sync('erro','ti-cloud-x'); });
+  dbListenerPre = { ref, fn };
+}
+
+// Date Pre
+function setDatePre(key){
+  dataAtivaPre = key;
+  if(key) localStorage.setItem('lastDatePre', key);
+  $('inp-date-pre').value = key||'';
+  updateDateLabelPre();
+  fbListenPre(key);
+}
+
+function onDateChangePre(){
+  const key = $('inp-date-pre').value;
+  setDatePre(key);
+}
+
+function updateDateLabelPre(){
+  const el = $('date-label-pre'); if(!el) return;
+  if(!dataAtivaPre){ el.innerHTML='<span style="color:#a0a09c;font-size:13px">Nenhuma data selecionada</span>'; return; }
+  const diff = diffDays(dataAtivaPre);
+  let badge='';
+  if(diff===0) badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">hoje</span>';
+  else if(diff===1) badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">amanhã</span>';
+  else if(diff>1) badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">em '+diff+' dias</span>';
+  else badge=' <span style="background:#fdf0ee;color:#c0392b;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600">há '+Math.abs(diff)+' dia(s)</span>';
+  el.innerHTML='<strong>'+fmtDate(dataAtivaPre)+'</strong> — '+weekday(dataAtivaPre)+badge;
+}
+
+// Render Pre Stats
+function renderStatsPre(){
+  const el = $('stats-pre-el'); if(!el) return;
+  const tot = totalPre();
+  const regs = REGS.filter(r=>(pautaPre[r]||[]).length>0).length;
+  el.innerHTML='<div class="stat"><div class="lb">Total de casos</div><div class="vl">'+tot+'</div></div>'+
+    '<div class="stat"><div class="lb">Regionais ativas</div><div class="vl">'+regs+'</div></div>';
+}
+
+// Render Pre Pauta
+function renderPre(){
+  renderStatsPre();
+  const wrap = $('pauta-pre-el'); if(!wrap) return;
+  wrap.innerHTML='';
+
+  // Ordem semanal para pré-comitê
+  const ordemRegs = getRegsOrdem(dataAtivaPre);
+
+  const div = document.createElement('div'); div.className='alc-block';
+  let inner = '<div class="alc-head" style="border-color:#f0b8b0;color:#c0392b"><span class="alc-name">Comitê Alçada 3</span><span class="alc-ct">'+totalPre()+' '+(totalPre()===1?'caso':'casos')+'</span></div>';
+
+  let num=1; let temItem=false;
+  ordemRegs.forEach(reg=>{
+    const items = pautaPre[reg]||[];
+    if(!items.length) return; temItem=true;
+    const bid='pre_'+reg.replace(/[\s\/]+/g,'_');
+    const cid='prec_'+reg.replace(/[\s\/]+/g,'_');
+    let rows = items.map((e,i)=>{
+      const gi = items.indexOf(e);
+      const regIdx2 = REGS.indexOf(reg);
+      const caseStyle='background:none;border:none;cursor:pointer;font-size:11px;padding:1px 3px;line-height:1;font-weight:bold;border-radius:3px;transition:all 0.15s;';
+      const upCase = i>0
+        ? '<button onclick="moverCasoPre('+regIdx2+','+gi+',-1)" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#c0392b&quot;;this.style.background=&quot;#fdf0ee&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▲</button>'
+        : '<span style="width:18px;display:inline-block"></span>';
+      const dnCase = i<items.length-1
+        ? '<button onclick="moverCasoPre('+regIdx2+','+gi+',1)" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#c0392b&quot;;this.style.background=&quot;#fdf0ee&quot;" onmouseout="this.style.color=&quot;#999&quot;;this.style.background=&quot;none&quot;">▼</button>'
+        : '<span style="width:18px;display:inline-block"></span>';
+      return '<div class="item">'+
+        '<div style="display:flex;flex-direction:column;line-height:1.3;flex-shrink:0;margin-right:2px">'+upCase+dnCase+'</div>'+
+        '<span class="item-num">'+(num+i)+'.</span>'+
+        '<div class="item-info"><div class="item-name">'+esc(e.empresa)+'</div>'+
+        '<div class="item-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>'+esc(e.analista)+'</div></div>'+
+        '<span class="badge ba3">Alçada 3</span>'+
+        '<button class="btn btn-dan btn-sm" onclick="doRemPre('+regIdx2+','+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
+    }).join('');
+    num+=items.length;
+    inner+='<div class="reg-sec">'+
+      '<div class="reg-head">'+
+      '<div class="reg-head-l"><span class="reg-name" onclick="togSec(\''+bid+'\',\''+cid+'\')">'+reg+'</span>'+
+      '<span class="reg-ct">'+items.length+' '+(items.length===1?'caso':'casos')+'</span></div>'+
+      '<i class="ti ti-chevron-down chevron" id="'+cid+'" onclick="togSec(\''+bid+'\',\''+cid+'\')" style="cursor:pointer"></i></div>'+
+      '<div class="items" id="'+bid+'">'+rows+'</div></div>';
+  });
+  if(!temItem) inner+='<div class="empty">Nenhum caso no Pré Comitê</div>';
+  div.innerHTML=inner; wrap.appendChild(div);
+
+  // Retirados Pre
+  if(retiradosPre.length>0){
+    const retDiv=document.createElement('div'); retDiv.className='retirados-block';
+    let rHTML='<div class="retirados-head"><span class="ret-name"><i class="ti ti-archive" style="font-size:14px;vertical-align:-2px;margin-right:6px"></i>Casos Retirados</span><span class="ret-ct">'+retiradosPre.length+' casos</span></div>';
+    rHTML+='<div style="display:flex;flex-direction:column;gap:5px">';
+    retiradosPre.forEach(function(e,i){
+      rHTML+='<div class="item item-ret">'+
+        '<div class="item-info"><div class="item-name">'+esc(e.empresa)+'</div>'+
+        '<div class="item-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>'+esc(e.analista)+' · '+esc(e.regional)+'</div></div>'+
+        '<button class="btn btn-warn btn-sm" onclick="doRepautarPre('+i+')"><i class="ti ti-arrow-back-up"></i>Repautar</button>'+
+        '<button class="btn btn-dan btn-sm" onclick="doApagarRetiradoPre('+i+')"><i class="ti ti-trash"></i>Apagar</button></div>';
+    });
+    rHTML+='</div>'; retDiv.innerHTML=rHTML; wrap.appendChild(retDiv);
+  }
+}
+
+// Add / Remove Pre
+function doAddPre(){
+  const emp=$('inp-emp-pre').value.trim();
+  const ana=$('inp-ana-pre').value.trim();
+  const reg=$('inp-reg-pre').value;
+  if(!emp){toast('⚠ Informe o nome da empresa');return;}
+  if(!ana){toast('⚠ Informe o analista responsável');return;}
+  if(!dataAtivaPre){toast('⚠ Selecione a data primeiro');return;}
+  if(!pautaPre[reg]) pautaPre[reg]=[];
+  pautaPre[reg].push({empresa:emp,analista:ana,alcada:'Alçada 3',ts:Date.now()});
+  $('inp-emp-pre').value=''; $('inp-ana-pre').value='';
+  renderPre(); fbSavePre();
+  toast('✓ '+emp+' adicionada ao Pré Comitê');
+}
+
+function doRemPre(regIdx,idx){
+  const reg=REGS[regIdx];
+  if(!reg||!pautaPre[reg]||!pautaPre[reg][idx]) return;
+  const item=pautaPre[reg][idx];
+  retiradosPre.push({empresa:item.empresa,analista:item.analista,alcada:'Alçada 3',regional:reg,ts:Date.now()});
+  pautaPre[reg].splice(idx,1);
+  renderPre(); fbSavePre();
+  toast(item.empresa+' movido para Casos Retirados');
+}
+
+function doRepautarPre(idx){
+  const item=retiradosPre[idx];
+  if(!pautaPre[item.regional]) pautaPre[item.regional]=[];
+  pautaPre[item.regional].push({empresa:item.empresa,analista:item.analista,alcada:'Alçada 3',ts:Date.now()});
+  retiradosPre.splice(idx,1);
+  renderPre(); fbSavePre();
+  toast(item.empresa+' repautado!');
+}
+
+function doApagarRetiradoPre(idx){
+  const nome=retiradosPre[idx].empresa;
+  retiradosPre.splice(idx,1);
+  renderPre(); fbSavePre();
+  toast(nome+' apagado permanentemente');
+}
+
+function moverCasoPre(regIdx,gi,dir){
+  const reg=REGS[regIdx]; if(!reg) return;
+  const arr=pautaPre[reg]; if(!arr) return;
+  const to=gi+dir; if(to<0||to>=arr.length) return;
+  const tmp=arr[gi]; arr[gi]=arr[to]; arr[to]=tmp;
+  renderPre(); fbSavePre();
+}
+
+// Export Pre
+function buildTextPre(){
+  const dl=dataAtivaPre?fmtDate(dataAtivaPre)+' — '+weekday(dataAtivaPre):new Date().toLocaleDateString('pt-BR');
+  let L=['*PRÉ COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+totalPre()+' caso(s)','','*Alçada 3*'];
+  let n=1;
+  getRegsOrdem(dataAtivaPre).forEach(reg=>{
+    const it=pautaPre[reg]||[]; if(!it.length) return;
+    L.push('','_'+reg+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;});
+  });
+  if(retiradosPre.length>0){
+    L.push('','*Casos Retirados*');
+    retiradosPre.forEach(e=>{L.push('- '+e.empresa+' ('+e.regional+')');});
+  }
+  return L.join('\n');
+}
+
+function doExportPre(){
+  if(totalPre()===0){toast('⚠ O Pré Comitê está vazio');return;}
+  const blob=new Blob([buildTextPre()],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pre_comite_'+(dataAtivaPre||'sem_data')+'.txt'; a.click();
+  toast('✓ Arquivo gerado');
+}
+
+function doCopyPre(){
+  if(totalPre()===0){toast('⚠ O Pré Comitê está vazio');return;}
+  navigator.clipboard.writeText(buildTextPre()).then(()=>toast('✓ Pré Comitê copiado!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=buildTextPre();document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('✓ Copiado!');
+  });
+}
+
+function doClosePre(){
+  const tot=totalPre(); if(tot===0){toast('⚠ O Pré Comitê está vazio');return;}
+  if(!confirm('Tem certeza que deseja encerrar o Pré Comitê?\nAlterações não serão mais permitidas.')) return;
+  const now=new Date();
+  if(!Array.isArray(histPre)) histPre=[];
+  histPre.unshift({id:Date.now(),dataComite:dataAtivaPre,dataCriacao:now.toLocaleDateString('pt-BR'),hora:now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),total:tot,regionais:JSON.parse(JSON.stringify(pautaPre)),retirados:JSON.parse(JSON.stringify(retiradosPre))});
+  if(dataAtivaPre) DB.ref('pre/'+dataAtivaPre).remove();
+  DB.ref('histPre').set(histPre);
+  localStorage.removeItem('lastDatePre');
+  REGS.forEach(r=>pautaPre[r]=[]); retiradosPre=[];
+  dataAtivaPre=''; $('inp-date-pre').value=''; updateDateLabelPre(); renderPre();
+  toast('✓ Pré Comitê fechado ('+tot+' casos)');
+}
+
+// Historico Pre
+function renderPreHist(){
+  const cont=$('prehist-el'); if(!cont) return;
+  if(!histPre||!histPre.length){cont.innerHTML='<div class="empty" style="margin-top:1rem">Nenhum Pré Comitê fechado ainda.</div>';return;}
+  cont.innerHTML='<div class="hist-list">'+histPre.map((h,hi)=>{
+    const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
+    const atv=REGS.filter(r=>(h.regionais[r]||[]).length>0);
+    let bc='<div class="h-alc" style="color:#c0392b">Alçada 3</div>';
+    let n=1;
+    REGS.forEach(r=>{
+      const it=(h.regionais[r]||[]); if(!it.length) return;
+      bc+='<div class="h-reg"><div class="h-reg-name">'+r+'</div>';
+      it.forEach(e=>{bc+='<div class="h-item">'+n+'. '+esc(e.empresa)+' <span style="color:#aaa">— '+esc(e.analista)+'</span></div>';n++;});
+      bc+='</div>';
+    });
+    if(h.retirados&&h.retirados.length>0){
+      bc+='<div class="h-ret-title">Casos Retirados ('+h.retirados.length+')</div>';
+      h.retirados.forEach(e=>{bc+='<div class="h-ret-item">'+esc(e.empresa)+'</div>';});
+    }
+    return '<div class="hcard"><div class="hcard-h" onclick="togH2('+hi+')">'+
+      '<div><div class="hd" style="color:#c0392b"><i class="ti ti-calendar-event" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Pré Comitê de '+dl+'</div>'+
+      '<div class="hi">Salvo em '+h.dataCriacao+' às '+h.hora+' · '+h.total+' caso(s) · '+atv.length+' regional(is)</div></div>'+
+      '<i class="ti ti-chevron-down" id="phi'+hi+'" style="font-size:16px;transition:transform .2s"></i></div>'+
+      '<div class="hcard-b" id="phb'+hi+'">'+bc+
+      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">'+
+      '<button class="btn-red-outline btn btn-sm" onclick="copyPreH('+hi+')"><i class="ti ti-clipboard"></i>Copiar</button>'+
+      '<button class="btn-red btn btn-sm" onclick="expPreH('+hi+')"><i class="ti ti-brand-whatsapp"></i>Exportar</button>'+
+      '<button class="btn btn-dan btn-sm" onclick="delPreH('+hi+')"><i class="ti ti-trash"></i>Excluir</button></div></div></div>';
+  }).join('')+'</div>';
+}
+
+function togH2(i){ const b=$('phb'+i),ic=$('phi'+i); const o=b.classList.toggle('open'); ic.style.transform=o?'rotate(180deg)':''; }
+
+function expPreH(hi){
+  const h=histPre[hi];
+  const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
+  let L=['*PRÉ COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+h.total+' caso(s)','','*Alçada 3*'];
+  let n=1;
+  REGS.forEach(r=>{ const it=h.regionais[r]||[]; if(!it.length) return; L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;}); });
+  if(h.retirados&&h.retirados.length>0){ L.push('','*Casos Retirados*'); h.retirados.forEach(e=>{L.push('- '+e.empresa);}); }
+  const blob=new Blob([L.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pre_comite_'+(h.dataComite||h.dataCriacao).replace(/\//g,'-')+'.txt'; a.click();
+  toast('✓ Exportado');
+}
+
+function copyPreH(hi){
+  const h=histPre[hi];
+  const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
+  let L=['*PRÉ COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+h.total+' caso(s)','','*Alçada 3*'];
+  let n=1;
+  REGS.forEach(r=>{ const it=h.regionais[r]||[]; if(!it.length) return; L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;}); });
+  navigator.clipboard.writeText(L.join('\n')).then(()=>toast('✓ Copiado!')).catch(()=>toast('✓ Copiado!'));
+}
+
+function delPreH(i){
+  histPre.splice(i,1);
+  DB.ref('histPre').set(histPre.length?histPre:null);
+  renderPreHist(); toast('Removido do histórico');
+}
+
 // ── INIT ──
 function startApp(){
   // Popula select de regionais
   const sel=$('inp-reg');
   REGS.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o); });
+
+  // Popula select de regionais do pre
+  const selPre=$('inp-reg-pre');
+  if(selPre){ REGS.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; selPre.appendChild(o); }); }
+
+  // Escuta histPre
+  DB.ref('histPre').on('value', snap=>{
+    histPre = snap.val() || [];
+    if(!Array.isArray(histPre)) histPre=Object.values(histPre);
+    if($('tab-prehist').style.display!=='none') renderPreHist();
+  });
 
   // Escuta histórico
   DB.ref('hist').on('value', snap=>{
@@ -735,6 +1081,10 @@ function startApp(){
   // Carrega última data usada ou hoje
   const lastDate = localStorage.getItem('lastDate') || todayKey();
   setDate(lastDate);
+
+  // Carrega última data pré
+  const lastDatePre = localStorage.getItem('lastDatePre') || todayKey();
+  setDatePre(lastDatePre);
 }
 
 // Inicia quando página carrega
