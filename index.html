@@ -889,7 +889,7 @@ function fbSavePre(){
 function fbListenPre(key){
   if(dbListenerPre){ dbListenerPre.ref.off('value', dbListenerPre.fn); dbListenerPre=null; }
   REGS.forEach(r=>pautaPre[r]=[]);
-  retiradosPre=[];
+  retiradosPre=[]; _ordemCustomPre={};
   renderPre();
   if(!key) return;
   const ref = DB.ref('pre/'+key);
@@ -899,6 +899,7 @@ function fbListenPre(key){
     if(d && d.regionais){ REGS.forEach(r=>{ pautaPre[r]=Array.isArray(d.regionais[r])?d.regionais[r]:[]; }); }
     else { REGS.forEach(r=>{ pautaPre[r]=[]; }); }
     retiradosPre = (d && Array.isArray(d.retirados)) ? d.retirados : [];
+    _ordemCustomPre = (d && d.ordemCustomPre && typeof d.ordemCustomPre==='object') ? d.ordemCustomPre : {};
     sync('sincronizado','ti-cloud-check');
     renderPre();
   }, err=>{ sync('erro','ti-cloud-x'); });
@@ -952,10 +953,16 @@ function renderPre(){
   const div = document.createElement('div'); div.className='alc-block';
   let inner = '<div class="alc-head" style="border-color:#f0b8b0;color:#c0392b"><span class="alc-name">Comitê Alçada 3</span><span class="alc-ct">'+totalPre()+' '+(totalPre()===1?'caso':'casos')+'</span></div>';
 
+  // Use custom order if available
+  const ordemPreFinal = (_ordemCustomPre['Alçada 3'] && _ordemCustomPre['Alçada 3'].length)
+    ? _ordemCustomPre['Alçada 3'] : ordemRegs;
+  const regsComCasosPre = ordemPreFinal.filter(r=>(pautaPre[r]||[]).length>0);
   let num=1; let temItem=false;
-  ordemRegs.forEach(reg=>{
+  ordemPreFinal.forEach((reg, regIdxPre)=>{
     const items = pautaPre[reg]||[];
     if(!items.length) return; temItem=true;
+    const posPreVisual = regsComCasosPre.indexOf(reg);
+    const totalPreCasos = regsComCasosPre.length;
     const bid='pre_'+reg.replace(/[\s\/]+/g,'_');
     const cid='prec_'+reg.replace(/[\s\/]+/g,'_');
     let rows = items.map((e,i)=>{
@@ -977,10 +984,20 @@ function renderPre(){
         '<button class="btn btn-dan btn-sm" onclick="doRemPre('+regIdx2+','+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
     }).join('');
     num+=items.length;
-    inner+='<div class="reg-sec">'+
+    const rBtnStP='background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;font-weight:bold;border-radius:4px;color:#888;';
+      const upBtnP = (totalPreCasos>1 && posPreVisual>0)
+        ? '<button onclick="moverRegionalPre('+posPreVisual+',-1)" title="Mover para cima" style="'+rBtnStP+'" onmouseover="this.style.color=&quot;#9a7a2a&quot;;this.style.background=&quot;rgba(154,122,42,.08)&quot;" onmouseout="this.style.color=&quot;#888&quot;;this.style.background=&quot;none&quot;">▲</button>'
+        : '<span style="width:26px;display:inline-block"></span>';
+      const dnBtnP = (totalPreCasos>1 && posPreVisual<totalPreCasos-1)
+        ? '<button onclick="moverRegionalPre('+posPreVisual+',1)" title="Mover para baixo" style="'+rBtnStP+'" onmouseover="this.style.color=&quot;#9a7a2a&quot;;this.style.background=&quot;rgba(154,122,42,.08)&quot;" onmouseout="this.style.color=&quot;#888&quot;;this.style.background=&quot;none&quot;">▼</button>'
+        : '<span style="width:26px;display:inline-block"></span>';
+      inner+='<div class="reg-sec">'+
       '<div class="reg-head">'+
-      '<div class="reg-head-l"><span class="reg-name" onclick="togSec(\''+bid+'\',\''+cid+'\')">'+reg+'</span>'+
-      '<span class="reg-ct">'+items.length+' '+(items.length===1?'caso':'casos')+'</span></div>'+
+      '<div class="reg-head-l">'+
+        '<div style="display:flex;flex-direction:column;line-height:1.2;flex-shrink:0">'+upBtnP+dnBtnP+'</div>'+
+        '<span class="reg-name" onclick="togSec(\''+bid+'\',\''+cid+'\')">'+reg+'</span>'+
+        '<span class="reg-ct">'+items.length+' '+(items.length===1?'caso':'casos')+'</span>'+
+      '</div>'+
       '<i class="ti ti-chevron-down chevron" id="'+cid+'" onclick="togSec(\''+bid+'\',\''+cid+'\')" style="cursor:pointer"></i></div>'+
       '<div class="items" id="'+bid+'">'+rows+'</div></div>';
   });
@@ -1050,6 +1067,29 @@ function moverCasoPre(regIdx,gi,dir){
   const to=gi+dir; if(to<0||to>=arr.length) return;
   const tmp=arr[gi]; arr[gi]=arr[to]; arr[to]=tmp;
   renderPre(); fbSavePre();
+}
+
+let _ordemCustomPre = {};
+
+function moverRegionalPre(regVisual, dir) {
+  // Get current order (no custom order for pre, just weekly rotation)
+  if(!_ordemCustomPre['Alçada 3'] || !Array.isArray(_ordemCustomPre['Alçada 3'])) {
+    _ordemCustomPre['Alçada 3'] = getRegsOrdem(dataAtivaPre).slice();
+  }
+  const ordem = _ordemCustomPre['Alçada 3'];
+  const visiveis = ordem.filter(r => (pautaPre[r]||[]).length > 0);
+  const novaPosVisual = regVisual + dir;
+  if(novaPosVisual < 0 || novaPosVisual >= visiveis.length) return;
+  const regA = visiveis[regVisual];
+  const regB = visiveis[novaPosVisual];
+  const idxA = ordem.indexOf(regA);
+  const idxB = ordem.indexOf(regB);
+  if(idxA===-1||idxB===-1) return;
+  const tmp=ordem[idxA]; ordem[idxA]=ordem[idxB]; ordem[idxB]=tmp;
+  renderPre();
+  // Save ordemCustomPre in firebase under the pre pauta
+  DB.ref('pre/'+dataAtivaPre+'/ordemCustomPre').set(_ordemCustomPre)
+    .catch(e=>console.error(e));
 }
 
 // Export Pre
