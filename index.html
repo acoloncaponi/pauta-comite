@@ -286,6 +286,11 @@ main{max-width:920px;margin:0 auto;padding:1.5rem 1rem 4rem}
     </div>
   </div>
   <main>
+    <div class="tabs">
+      <button class="tab on tab-green" onclick="goViewerTab('pauta',this)">⬡ Pauta do Dia</button>
+      <button class="tab tab-green" onclick="goViewerTab('hist',this)">◷ Histórico</button>
+    </div>
+    <div id="viewer-tab-pauta">
     <div class="date-bar">
       <i class="ti ti-calendar-event" style="font-size:18px;color:var(--text2)"></i>
       <label>Data do Comitê</label>
@@ -294,6 +299,10 @@ main{max-width:920px;margin:0 auto;padding:1.5rem 1rem 4rem}
     </div>
     <div id="viewer-stats" class="stats"></div>
     <div id="viewer-content"></div>
+    </div><!-- end viewer-tab-pauta -->
+    <div id="viewer-tab-hist" style="display:none">
+      <div id="viewer-hist-content"></div>
+    </div>
   </main>
 </div>
 
@@ -313,7 +322,7 @@ firebase.initializeApp({
 const DB = firebase.database();
 
 // ── CONSTANTES ──
-const REGS_BASE = ["Corporate","SP 1","SP 2","São Paulo Interior","Centro-Oeste","Nordeste","RJ - MG - ES","Sul"];
+const REGS_BASE = ["Corporate","SP 1","SP 2","São Paulo Interior","Cerealista","Centro-Oeste","Nordeste","RJ - MG - ES","Sul"];
 
 // Rotação semanal: semana de referência = 02/06/2026, Corporate na frente
 // A cada semana, a primeira regional vai para o final
@@ -1241,6 +1250,61 @@ let viewerListener = null;
 
 REGS.forEach(r => viewerPauta[r] = []);
 
+function goViewerTab(t, el){
+  document.querySelectorAll('#viewer .tab').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('viewer-tab-pauta').style.display = t==='pauta'?'':'none';
+  document.getElementById('viewer-tab-hist').style.display = t==='hist'?'':'none';
+  document.getElementById('viewer-title').textContent = t==='hist'
+    ? 'Histórico de Comitês · Visualização'
+    : 'Pauta do Comitê · Visualização';
+  if(t==='hist') renderViewerHist();
+}
+
+function renderViewerHist(){
+  const cont = document.getElementById('viewer-hist-content'); if(!cont) return;
+  if(!hist||!hist.length){
+    cont.innerHTML='<div class="empty" style="margin-top:1rem;padding:3rem">Nenhuma pauta fechada ainda.</div>';
+    return;
+  }
+  cont.innerHTML='<div class="hist-list">'+hist.map((h,hi)=>{
+    const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
+    const atv=REGS.filter(r=>(h.regionais[r]||[]).length>0);
+    let bc='';
+    ALCS.forEach(alc=>{
+      const tA=REGS.reduce((s,r)=>s+(h.regionais[r]||[]).filter(e=>e.alcada===alc).length,0); if(!tA) return;
+      bc+='<div class="h-alc">Comitê '+alc+'</div>';
+      let n=1;
+      const ordemH=(h.ordemCustom&&h.ordemCustom[alc]&&h.ordemCustom[alc].length)?h.ordemCustom[alc]:getRegsOrdem(h.dataComite||null);
+      ordemH.forEach(r=>{
+        const it=(h.regionais[r]||[]).filter(e=>e.alcada===alc); if(!it.length) return;
+        bc+='<div class="h-reg"><div class="h-reg-name">'+r+'</div>';
+        it.forEach(e=>{bc+='<div class="h-item">'+n+'. '+esc(e.empresa)+' <span style="color:var(--text3)">— '+esc(e.analista)+'</span></div>';n++;});
+        bc+='</div>';
+      });
+    });
+    if(h.retirados&&h.retirados.length>0){
+      bc+='<div class="h-ret-title">Casos Retirados ('+h.retirados.length+')</div>';
+      h.retirados.forEach(e=>{bc+='<div class="h-ret-item">'+esc(e.empresa)+' <span style="font-style:normal;text-decoration:none;color:var(--text3)">— '+esc(e.regional)+'</span></div>';});
+    }
+    return '<div class="hcard">'+
+      '<div class="hcard-h" onclick="togViewerH('+hi+')">'+
+        '<div>'+
+          '<div class="hd"><i class="ti ti-calendar-event" style="font-size:13px;vertical-align:-2px;margin-right:5px"></i>Comitê de '+dl+'</div>'+
+          '<div class="hi">'+h.total+' caso(s) · '+atv.length+' regional(is) · Encerrado em '+h.dataCriacao+' às '+h.hora+'</div>'+
+        '</div>'+
+        '<i class="ti ti-chevron-down" id="vhi'+hi+'" style="font-size:15px;transition:transform .2s;color:var(--text3)"></i>'+
+      '</div>'+
+      '<div class="hcard-b" id="vhb'+hi+'">'+bc+'</div>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+function togViewerH(i){
+  const b=document.getElementById('vhb'+i), ic=document.getElementById('vhi'+i);
+  const o=b.classList.toggle('open'); ic.style.transform=o?'rotate(180deg)':'';
+}
+
 function startViewer(){
   const lastDate = localStorage.getItem('lastDate') || todayKey();
   setViewerDate(lastDate);
@@ -1250,6 +1314,12 @@ function startViewer(){
     } else {
       document.getElementById('viewer-sync').innerHTML='<i class="ti ti-cloud-x" style="font-size:13px"></i>reconectando...';
     }
+  });
+  // Viewer also listens to history (read-only)
+  DB.ref('hist').on('value', snap=>{
+    hist = snap.val() || [];
+    if(!Array.isArray(hist)) hist=Object.values(hist);
+    if(document.getElementById('viewer-tab-hist') && document.getElementById('viewer-tab-hist').style.display!=='none') renderViewerHist();
   });
 }
 
