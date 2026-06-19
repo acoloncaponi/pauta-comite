@@ -649,6 +649,22 @@ function moverCaso(regIdx, gi, dir) {
   fbSave();
 }
 
+function togglePreOk(regIdx, gi){
+  const reg = REGS[regIdx];
+  if(!reg || !pautaPre[reg] || !pautaPre[reg][gi]) return;
+  pautaPre[reg][gi].ok = !pautaPre[reg][gi].ok;
+  renderPre();
+  fbSavePre();
+}
+
+function togglePreOk(regIdx, gi){
+  const reg = REGS[regIdx];
+  if(!reg || !pautaPre[reg] || pautaPre[reg][gi]===undefined) return;
+  pautaPre[reg][gi].ok = !pautaPre[reg][gi].ok;
+  renderPre();
+  fbSavePre();
+}
+
 function togSec(bid,cid){ $(bid).classList.toggle('hide'); $(cid).classList.toggle('rot'); }
 
 // ── TABS ──
@@ -984,10 +1000,13 @@ function renderPre(){
       const dnCase = i<items.length-1
         ? '<button onclick="moverCasoPre('+regIdx2+','+gi+',1)" style="'+caseStyle+'color:#999" onmouseover="this.style.color=&quot;#b83020&quot;;this.style.background=&quot;rgba(184,48,32,.08)&quot;" onmouseout="this.style.color=&quot;#aaa&quot;;this.style.background=&quot;none&quot;">▼</button>'
         : '<span style="width:18px;display:inline-block"></span>';
-      return '<div class="item">'+
+      const isOk = !!e.ok;
+        const okBtn = '<button onclick="togglePreOk('+regIdx2+','+gi+')" title="'+(isOk?'Desmarcar':'Marcar como aprovado')+'" style="background:none;border:none;cursor:pointer;font-size:18px;padding:0 6px 0 2px;line-height:1;flex-shrink:0">'+( isOk?'✅':'❌')+'</button>';
+        return '<div class="item" style="'+(isOk?'background:#f0faf2;border-color:rgba(42,122,56,.2);border-left-color:rgba(42,122,56,.4);':'')+'">'+
         '<div style="display:flex;flex-direction:column;line-height:1.3;flex-shrink:0;margin-right:2px">'+upCase+dnCase+'</div>'+
         '<span class="item-num">'+(num+i)+'.</span>'+
-        '<div class="item-info"><div class="item-name">'+esc(e.empresa)+'</div>'+
+        okBtn+
+        '<div class="item-info"><div class="item-name" style="'+(isOk?'color:var(--green);font-weight:600;':'')+'">'+esc(e.empresa)+'</div>'+
         '<div class="item-meta"><i class="ti ti-user" style="font-size:12px;vertical-align:-1px;margin-right:3px"></i>'+esc(e.analista)+'</div></div>'+
         '<span class="badge ba3">Alçada 3</span>'+
         '<button class="btn btn-dan btn-sm" onclick="doRemPre('+regIdx2+','+gi+')"><i class="ti ti-x"></i>Retirar</button></div>';
@@ -1106,9 +1125,10 @@ function buildTextPre(){
   const dl=dataAtivaPre?fmtDate(dataAtivaPre)+' — '+weekday(dataAtivaPre):new Date().toLocaleDateString('pt-BR');
   let L=['*PRÉ COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+totalPre()+' caso(s)','','*Alçada 3*'];
   let n=1;
-  getRegsOrdem(dataAtivaPre).forEach(reg=>{
+  const ordemExportPre = (_ordemCustomPre['Alçada 3']&&_ordemCustomPre['Alçada 3'].length)?_ordemCustomPre['Alçada 3']:getRegsOrdem(dataAtivaPre);
+  ordemExportPre.forEach(reg=>{
     const it=pautaPre[reg]||[]; if(!it.length) return;
-    L.push('','_'+reg+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;});
+    L.push('','_'+reg+'_'); it.forEach(e=>{L.push(n+'. '+(e.ok?'✅':'❌')+' '+e.empresa);n++;});
   });
   if(retiradosPre.length>0){
     L.push('','*Casos Retirados*');
@@ -1183,7 +1203,7 @@ function expPreH(hi){
   const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
   let L=['*PRÉ COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+h.total+' caso(s)','','*Alçada 3*'];
   let n=1;
-  REGS.forEach(r=>{ const it=h.regionais[r]||[]; if(!it.length) return; L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;}); });
+  REGS.forEach(r=>{ const it=h.regionais[r]||[]; if(!it.length) return; L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+(e.ok?'✅':'❌')+' '+e.empresa);n++;}); });
   if(h.retirados&&h.retirados.length>0){ L.push('','*Casos Retirados*'); h.retirados.forEach(e=>{L.push('- '+e.empresa);}); }
   const blob=new Blob([L.join('\n')],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pre_comite_'+(h.dataComite||h.dataCriacao).replace(/\//g,'-')+'.txt'; a.click();
@@ -1195,7 +1215,7 @@ function copyPreH(hi){
   const dl=h.dataComite?fmtDate(h.dataComite)+' — '+weekday(h.dataComite):h.dataCriacao;
   let L=['*PRÉ COMITÊ DE CRÉDITO*','📅 '+dl,'📋 Total: '+h.total+' caso(s)','','*Alçada 3*'];
   let n=1;
-  REGS.forEach(r=>{ const it=h.regionais[r]||[]; if(!it.length) return; L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+e.empresa);n++;}); });
+  REGS.forEach(r=>{ const it=h.regionais[r]||[]; if(!it.length) return; L.push('','_'+r+'_'); it.forEach(e=>{L.push(n+'. '+(e.ok?'✅':'❌')+' '+e.empresa);n++;}); });
   navigator.clipboard.writeText(L.join('\n')).then(()=>toast('✓ Copiado!')).catch(()=>toast('✓ Copiado!'));
 }
 
