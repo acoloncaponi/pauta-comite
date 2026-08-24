@@ -322,13 +322,13 @@ firebase.initializeApp({
 const DB = firebase.database();
 
 // ── CONSTANTES ──
-const REGS_BASE = ["Corporate","SP 1","SP 2","São Paulo Interior","Cerealista","Centro-Oeste","Nordeste","RJ - MG - ES","Sul"];
+const REGS_BASE = ["SP 5","SP 4","São Paulo Interior","Cerealista","Centro-Oeste","Nordeste","RJ - MG - ES","Corporate","Sul"];
 
-// Rotação semanal: semana de referência = 02/06/2026, Corporate na frente
+// Rotação semanal: semana de referência = 25/08/2026, SP 5 na frente
 // A cada semana, a primeira regional vai para o final
 function getRegsOrdem(dataISO) {
   // Calcula qual semana desde a semana de referência (segunda-feira 02/06/2026)
-  const ref = new Date(2026, 5, 1); // segunda 01/06/2026 (início da semana)
+  const ref = new Date(2026, 7, 24); // segunda 24/08/2026 (início da semana)
   const d = dataISO ? new Date(dataISO+'T12:00:00') : new Date();
   // Início da semana da data selecionada (segunda-feira)
   const dow = d.getDay(); // 0=dom,1=seg...
@@ -336,7 +336,7 @@ function getRegsOrdem(dataISO) {
   const seg = new Date(d); seg.setDate(d.getDate() + diffToMon); seg.setHours(0,0,0,0);
   const diffMs = seg - ref;
   const diffWeeks = Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
-  const offset = ((diffWeeks % 8) + 8) % 8; // garante positivo
+  const offset = ((diffWeeks % REGS_BASE.length) + REGS_BASE.length) % REGS_BASE.length; // garante positivo
   return [...REGS_BASE.slice(offset), ...REGS_BASE.slice(0, offset)];
 }
 
